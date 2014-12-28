@@ -21,7 +21,7 @@ var Corners = Corners || {
     // define board that exposes state object (read-only), functions : init(), setChecker(point, checker), pickChecker(point)
         board : (function board(width, height) {
             'use strict';
-            var state = [],
+            var _state = [],
                 initialized = false,
                 // initialize board to empty
                 init = function init() {
@@ -32,16 +32,16 @@ var Corners = Corners || {
                             col.push({ color : null });
                         }
 
-                        state.push(col);
+                        _state.push(col);
                     }
                     initialized = true;
                 },
                 getColor = function getColor(point) {
-                    var col = state[point.x];
+                    var col = _state[point.x];
                     return col[point.y].color;
                 },
                 setColor = function setColor(point, color) {
-                    var col = state[point.x];
+                    var col = _state[point.x];
                     col[point.y].color = color;
                 },
                 resetColor = function resetColor(point) {
@@ -103,7 +103,7 @@ var Corners = Corners || {
                 pickChecker : pickChecker,
                 init : init,
                 state : function stateWrapper() {
-                    return state;
+                    return _state;
                 }
             };
         })(BOARD_WIDTH, BOARD_HEIGHT)
