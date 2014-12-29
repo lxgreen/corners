@@ -265,9 +265,5 @@ describe("Player.makeMove functionality", function() {
             [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
             [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}]
         ]);
-
     });
-
-
-
 });
