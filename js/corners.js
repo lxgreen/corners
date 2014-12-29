@@ -44,7 +44,7 @@ var Corners = Corners || {
 	            },
 
 	            resetColor = function resetColor(point) {
-	                setColor(point, "");
+	                setColor(point, null);
 	            };
 
             // initialize board to empty
@@ -74,7 +74,7 @@ var Corners = Corners || {
                     return false;
                 }
                 // invalid params
-                if (!utils.validateColor(color) || !utils.validatePoint(point)) {
+                if (!utils.validateColor(color) || !utils.validatePoint(point, this.width, this.height)) {
                     return false;
                 }
 
@@ -92,7 +92,7 @@ var Corners = Corners || {
                     return false;
                 }
 
-                if (!utils.validatePoint(point)) {
+                if (!utils.validatePoint(point, this.width, this.height)) {
                     return false;
                 }
 
