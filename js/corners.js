@@ -22,6 +22,13 @@ var Corners = Corners || {
         Board : function Board(width, height) {
             'use strict';
 
+            this.width = width || 8;
+            this.height = height || 8;
+
+            if(this.width <= 0 || this.height <= 0) {
+                throw new Error("Invalid Board dimensions");
+            }
+
             var _state = [],
 
             	initialized = false,
@@ -40,21 +47,22 @@ var Corners = Corners || {
 	                setColor(point, "");
 	            };
 
-            this.width = width;
-            this.height = height;
-
             // initialize board to empty
             Board.prototype.init = function init() {
                 var col, i, j;
-                for (i = 0; i < width; ++i) {
+                _state = [];
+                for (i = 0; i < this.width; ++i) {
                     col = [];
-                    for (j = 0; j < height; ++j) {
+                    for (j = 0; j < this.height; ++j) {
                         col.push({ color : null });
                     }
 
                     _state.push(col);
                 }
+
                 initialized = true;
+
+                return initialized;
             };
 
 
@@ -109,8 +117,38 @@ var Corners = Corners || {
             };
 
             this.state = function state() {
-
                 return _state;
+            };
+        },
+        Player : function Player(board, color) {
+            'use strict';
+            this.color = color || "WHITE";
+            this.board = board;
+
+            if(!utils.validateColor(this.color)) {
+                throw new Error("Invalid Player color '" + this.color + "'");
+            }
+
+            if(!this.board || !this.board.init()) {
+                throw new Error("Invalid Player board");
+            }
+
+            this.board.playerName = "lxgreen " + this.color;
+
+            Player.prototype.makeMove = function makeMove(pointFrom, pointTo) {
+
+                var checker = board.getChecker(pointFrom);
+
+                if(checker !== this.color) {
+                    return false;
+                }
+
+                if(!board.setChecker(pointTo, checker)) {
+                    return false;
+                }
+
+                return board.pickChecker(pointFrom);
+
 
             };
         }
