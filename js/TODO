@@ -1,0 +1,13 @@
+1.  make Board to be instantiated with ctor rather being static instance. Rewrite tests.
+
+2.  create Player object having color (ctor'ed). Roles: make moves.
+2a. Player tests
+
+3.  create Game object having Board and 2 Players (ctor'ed). Roles: init board positions for players, check moves validity,
+    check win/draw condition, gamble Player colors.
+3a. Game tests
+
+4.  create AI Player as subobject of the Player. Roles: calculate moves proiority
+4a. AIPlayer tests
+
+5. UI
