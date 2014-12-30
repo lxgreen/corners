@@ -1,8 +1,0 @@
-3.  create Game object having Board and 2 Players (ctor'ed). Roles: init board positions for players, check moves validity,
-    check win/draw condition, gamble Player colors.
-3a. Game tests
-
-4.  create AI Player as subobject of the Player. Roles: calculate moves proiority
-4a. AIPlayer tests
-
-5. UI
