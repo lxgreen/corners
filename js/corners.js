@@ -31,7 +31,7 @@ var Corners = Corners || {
 
             var _state = [],
 
-            	initialized = false,
+                initialized = false,
 
 	            getColor = function getColor(point) {
 	                var col = _state[point.x];
@@ -49,11 +49,11 @@ var Corners = Corners || {
 
             // initialize board to empty
             Board.prototype.init = function init() {
-                var col, i, j;
+                var col, i, j, w, h;
                 _state = [];
-                for (i = 0; i < this.width; ++i) {
+                for (i = 0, w = this.width; i < w; ++i) {
                     col = [];
-                    for (j = 0; j < this.height; ++j) {
+                    for (j = 0, h = this.height; j < h; ++j) {
                         col.push({ color : null });
                     }
 
@@ -125,11 +125,11 @@ var Corners = Corners || {
             this.color = color || "WHITE";
             this.board = board;
 
-            if(!utils.validateColor(this.color)) {
+            if (!utils.validateColor(this.color)) {
                 throw new Error("Invalid Player color '" + this.color + "'");
             }
 
-            if(!this.board || !this.board.init()) {
+            if (!this.board || !this.board.init()) {
                 throw new Error("Invalid Player board");
             }
 
@@ -139,11 +139,11 @@ var Corners = Corners || {
 
                 var checker = board.getChecker(pointFrom);
 
-                if(checker !== this.color) {
+                if (checker !== this.color) {
                     return false;
                 }
 
-                if(!board.setChecker(pointTo, checker)) {
+                if (!board.setChecker(pointTo, checker)) {
                     return false;
                 }
 
