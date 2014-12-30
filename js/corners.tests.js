@@ -112,7 +112,6 @@ describe("UTILS API", function() {
     });
 });
 
-
 describe("utils.validatePoint functionality", function() {
     it("should validate point {x : 5, y : 0} vs 8x8", function() {
         expect(utils.validatePoint({x : 5, y : 0}, 8, 8)).toBeTruthy();
@@ -143,18 +142,18 @@ describe("utils.validateColor functionality", function() {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 describe("PLAYER API", function() {
-    var board = new Corners.Board(),
-        whitePlayer = new Corners.Player(board),
-        blackPlayer = new Corners.Player(board, "BLACK");
+    var game = new Corners.Game(),
+        whitePlayer = new Corners.Player(game),
+        blackPlayer = new Corners.Player(game, "BLACK");
 
-    it("should throw error on invalid board", function() {
-        expect(new Corners.Player()).toThrowError();
-        expect(new Corners.Player(1)).toThrowError();
+    it("should throw error on invalid game", function() {
+        expect(function(){var p = new Corners.Player(); }).toThrow(new Error("Invalid Player Game"));
+        expect(function(){var p = new Corners.Player(123); }).toThrow(new Error("Invalid Player Game"));
 
     });
 
     it("should throw error on invalid color", function() {
-        expect(new Corners.Player(board, "GREEN")).toThrowError();
+        expect(function(){var p = new Corners.Player(game, "GREEN"); }).toThrow(new Error("Invalid Player color 'GREEN'"));
     });
 
     it("should define default Player", function() {
@@ -166,20 +165,12 @@ describe("PLAYER API", function() {
         expect(blackPlayer.color).toBe("BLACK");
     });
 
-    it("should expose Player's board", function() {
-
-        expect(whitePlayer.board.state()).toEqual([
-            [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
-            [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
-            [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
-            [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
-            [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
-            [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
-            [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
-            [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}]
-        ]);
-
-        expect(whitePlayer.board).toEqual(blackPlayer.board);
+    it("should expose Player's game and its players", function() {
+        expect(whitePlayer.game).toBeDefined();
+        expect(whitePlayer.game.player1).toEqual(whitePlayer);
+        expect(whitePlayer.game.player2).toEqual(blackPlayer);
+        expect(blackPlayer.game.player1).toEqual(whitePlayer);
+        expect(blackPlayer.game.player2).toEqual(blackPlayer);
     });
 
     it("should expose makeMove()", function() {
@@ -188,15 +179,30 @@ describe("PLAYER API", function() {
 });
 
 describe("Player.makeMove functionality", function() {
-    var board = new Corners.Board(),
-        whitePlayer = new Corners.Player(board),
-        blackPlayer = new Corners.Player(board, "BLACK");
 
-    whitePlayer.board.setChecker({x : 0, y : 0}, "WHITE");
-    whitePlayer.board.setChecker({x : 1, y : 1}, "BLACK");
+    var TestPlayer = function TestPlayer(game, color) {
+        TestPlayer.prototype = new Corners.Player(game, color);
+
+        TestPlayer.prototype.getMove = function getMove() {
+            if(this.color === "WHITE") {
+                return {pointFrom : {x : 0, y : 0}, pointTo : {x : 1, y : 1}};
+            } else {
+                return {pointFrom : {x : 1, y : 1}, pointTo : {x : 2, y : 2}};
+            }
+        };
+    };
+
+    var game = new Corners.Game(),
+        whitePlayer = new TestPlayer(game),
+        blackPlayer = new TestPlayer(game, "BLACK");
+
+        game.init();
+        game.board.setChecker({x : 0, y : 0}, "WHITE");
+        game.board.setChecker({x : 1, y : 1}, "BLACK");
+
 
     it("should fail on wrong point moves", function() {
-        expect(whitePlayer.board.state()).toEqual([
+        expect(whitePlayer.game.board.state()).toEqual([
             [{color : "WHITE"},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
             [{color : null},{color : "BLACK"},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
             [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
@@ -207,28 +213,9 @@ describe("Player.makeMove functionality", function() {
             [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}]
         ]);
 
-        expect(whitePlayer.makeMove({x : 3, y : 3}, {x : 4, y : 4})).toBeFalsy();   // empty source
-        expect(whitePlayer.makeMove({x : 3, y : -3}, {x : 4, y : 4})).toBeFalsy();  // invalid source
-        expect(whitePlayer.makeMove({x : 0, y : 0}, {x : 1, y : 1})).toBeFalsy();   // occupied target
-        expect(whitePlayer.makeMove({x : 0, y : 0}, {x : -1, y : 1})).toBeFalsy();  // invalid target
+        expect(whitePlayer.makeMove()).toBeFalsy();   // occupied target
 
-        expect(whitePlayer.board.state()).toEqual([
-            [{color : "WHITE"},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
-            [{color : null},{color : "BLACK"},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
-            [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
-            [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
-            [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
-            [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
-            [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
-            [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}]
-        ]);
-
-    });
-
-    it("should fail on wrong color checker moves", function() {
-        expect(whitePlayer.makeMove({x : 1, y : 1}, {x : 2, y : 2})).toBeFalsy();   // wrong color
-        expect(blackPlayer.makeMove({x : 0, y : 0}, {x : 2, y : 2})).toBeFalsy();   // wrong color
-        expect(whitePlayer.board.state()).toEqual([
+        expect(whitePlayer.game.board.state()).toEqual([
             [{color : "WHITE"},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
             [{color : null},{color : "BLACK"},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
             [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
@@ -241,25 +228,30 @@ describe("Player.makeMove functionality", function() {
 
     });
 
+//    it("should fail on wrong color checker moves", function() {
+//        expect(whitePlayer.makeMove({x : 1, y : 1}, {x : 2, y : 2})).toBeFalsy();   // wrong color
+//        expect(blackPlayer.makeMove({x : 0, y : 0}, {x : 2, y : 2})).toBeFalsy();   // wrong color
+//        expect(whitePlayer.board.state()).toEqual([
+//            [{color : "WHITE"},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
+//            [{color : null},{color : "BLACK"},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
+//            [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
+//            [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
+//            [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
+//            [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
+//            [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
+//            [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}]
+//        ]);
+//
+//    });
+//
     it("should succeed on legal moves", function() {
-        expect(blackPlayer.makeMove({x : 1, y : 1}, {x : 2, y : 2})).toBeTruthy();
-        expect(whitePlayer.makeMove({x : 0, y : 0}, {x : 3, y : 3})).toBeTruthy();
-        expect(whitePlayer.board.state()).toEqual([
-            [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
-            [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
-            [{color : null},{color : null},{color : "BLACK"},{color : null},{color : null},{color : null},{color : null},{color : null}],
-            [{color : null},{color : null},{color : null},{color : "WHITE"},{color : null},{color : null},{color : null},{color : null}],
-            [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
-            [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
-            [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
-            [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}]
-        ]);
+        expect(blackPlayer.makeMove()).toBeTruthy();
 
-        expect(blackPlayer.board.state()).toEqual([
-            [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
+        expect(blackPlayer.game.board.state()).toEqual([
+            [{color : "WHITE"},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
             [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
             [{color : null},{color : null},{color : "BLACK"},{color : null},{color : null},{color : null},{color : null},{color : null}],
-            [{color : null},{color : null},{color : null},{color : "WHITE"},{color : null},{color : null},{color : null},{color : null}],
+            [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
             [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
             [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
             [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
