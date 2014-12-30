@@ -25,21 +25,21 @@ var Corners = Corners || {
             this.width = width || 8;
             this.height = height || 8;
 
-            if(this.width <= 0 || this.height <= 0) {
+            if (this.width <= 0 || this.height <= 0) {
                 throw new Error("Invalid Board dimensions");
             }
 
-            var _state = [],
+            var state = [],
 
                 initialized = false,
 
 	            getColor = function getColor(point) {
-	                var col = _state[point.x];
+	                var col = state[point.x];
 	                return col[point.y].color;
 	            },
 
 	            setColor = function setColor(point, color) {
-	                var col = _state[point.x];
+	                var col = state[point.x];
 	                col[point.y].color = color;
 	            },
 
@@ -50,14 +50,14 @@ var Corners = Corners || {
             // initialize board to empty
             Board.prototype.init = function init() {
                 var col, i, j, w, h;
-                _state = [];
-                for (i = 0, w = this.width; i < w; ++i) {
+                state = [];
+                for (i = 0, w = this.width; i < w; i += 1) {
                     col = [];
-                    for (j = 0, h = this.height; j < h; ++j) {
+                    for (j = 0, h = this.height; j < h; j += 1) {
                         col.push({ color : null });
                     }
 
-                    _state.push(col);
+                    state.push(col);
                 }
 
                 initialized = true;
@@ -117,7 +117,7 @@ var Corners = Corners || {
             };
 
             this.state = function state() {
-                return _state;
+                return state;
             };
         },
         Player : function Player(board, color) {
