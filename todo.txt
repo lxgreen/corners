@@ -1,4 +1,4 @@
-- modify Player so it's instantiated with Game parameter, rather Board parameter.
++ modify Player so it's instantiated with Game parameter, rather Board parameter.
 - retest Player makeMove()
 - Create Game object having Board and 2 Players (ctor'ed). Roles: init board positions for players, check moves validity,   check win/draw condition.
 - Game tests + Player retests

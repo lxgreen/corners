@@ -142,9 +142,9 @@ describe("utils.validateColor functionality", function() {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 describe("PLAYER API", function() {
-    var game = new Corners.Game(),
-        whitePlayer = new Corners.Player(game),
-        blackPlayer = new Corners.Player(game, "BLACK");
+    var agame = new Corners.Game(),
+        whitePlayer = new Corners.Player(agame),
+        blackPlayer = new Corners.Player(agame, "BLACK");
 
     it("should throw error on invalid game", function() {
         expect(function(){var p = new Corners.Player(); }).toThrow(new Error("Invalid Player Game"));
@@ -153,7 +153,7 @@ describe("PLAYER API", function() {
     });
 
     it("should throw error on invalid color", function() {
-        expect(function(){var p = new Corners.Player(game, "GREEN"); }).toThrow(new Error("Invalid Player color 'GREEN'"));
+        expect(function(){var p = new Corners.Player(agame, "GREEN"); }).toThrow(new Error("Invalid Player color 'GREEN'"));
     });
 
     it("should define default Player", function() {
@@ -180,29 +180,36 @@ describe("PLAYER API", function() {
 
 describe("Player.makeMove functionality", function() {
 
+
     var TestPlayer = function TestPlayer(game, color) {
+        this.game = game;
+        this.color = color;
+
         TestPlayer.prototype = new Corners.Player(game, color);
 
-        TestPlayer.prototype.getMove = function getMove() {
+        TestPlayer.prototype.constructor = TestPlayer;
+
+        TestPlayer.prototype.makeMove = function makeMove() {
             if(this.color === "WHITE") {
-                return {pointFrom : {x : 0, y : 0}, pointTo : {x : 1, y : 1}};
+                return new Corners.Move(new Corners.Point(0, 0), new Corners.Point(0, 1), this.color);
             } else {
-                return {pointFrom : {x : 1, y : 1}, pointTo : {x : 2, y : 2}};
+                return new Corners.Move(new Corners.Point(1, 1), new Corners.Point(2, 2), this.color);
             }
         };
+
     };
 
-    var game = new Corners.Game(),
-        whitePlayer = new TestPlayer(game),
-        blackPlayer = new TestPlayer(game, "BLACK");
+    var thegame = new Corners.Game(),
+        whiteTestPlayer = new TestPlayer(thegame),
+        blackTestPlayer = new TestPlayer(thegame, "BLACK");
 
-        game.init();
-        game.board.setChecker({x : 0, y : 0}, "WHITE");
-        game.board.setChecker({x : 1, y : 1}, "BLACK");
+        thegame.init();
+        thegame.board.setChecker({x : 0, y : 0}, "WHITE");
+        thegame.board.setChecker({x : 1, y : 1}, "BLACK");
 
 
-    it("should fail on wrong point moves", function() {
-        expect(whitePlayer.game.board.state()).toEqual([
+    it("should succeed on correct moves", function() {
+        expect(thegame.board.state()).toEqual([
             [{color : "WHITE"},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
             [{color : null},{color : "BLACK"},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
             [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
@@ -213,10 +220,10 @@ describe("Player.makeMove functionality", function() {
             [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}]
         ]);
 
-        expect(whitePlayer.makeMove()).toBeFalsy();   // occupied target
+        expect(thegame.nextMove()).toBeTruthy();    // white 0,0 => 0,1
 
-        expect(whitePlayer.game.board.state()).toEqual([
-            [{color : "WHITE"},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
+        expect(thegame.board.state()).toEqual([
+            [{color : null},{color : "WHITE"},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
             [{color : null},{color : "BLACK"},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
             [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
             [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
@@ -228,34 +235,30 @@ describe("Player.makeMove functionality", function() {
 
     });
 
-//    it("should fail on wrong color checker moves", function() {
-//        expect(whitePlayer.makeMove({x : 1, y : 1}, {x : 2, y : 2})).toBeFalsy();   // wrong color
-//        expect(blackPlayer.makeMove({x : 0, y : 0}, {x : 2, y : 2})).toBeFalsy();   // wrong color
-//        expect(whitePlayer.board.state()).toEqual([
-//            [{color : "WHITE"},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
-//            [{color : null},{color : "BLACK"},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
-//            [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
-//            [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
-//            [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
-//            [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
-//            [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
-//            [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}]
-//        ]);
-//
-//    });
-//
-    it("should succeed on legal moves", function() {
-        expect(blackPlayer.makeMove()).toBeTruthy();
-
-        expect(blackPlayer.game.board.state()).toEqual([
+    it("should fail on wrong moves", function() {
+        expect(thegame.board.state()).toEqual([
             [{color : "WHITE"},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
+            [{color : null},{color : "BLACK"},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
             [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
-            [{color : null},{color : null},{color : "BLACK"},{color : null},{color : null},{color : null},{color : null},{color : null}],
             [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
             [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
             [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
             [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
             [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}]
         ]);
+
+        expect(thegame.nextMove()).toBeFalsy();    // black 1,1 => 2,2
+
+        expect(thegame.board.state()).toEqual([
+            [{color : null},{color : "WHITE"},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
+            [{color : null},{color : "BLACK"},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
+            [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
+            [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
+            [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
+            [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
+            [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
+            [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}]
+        ]);
+
     });
 });
