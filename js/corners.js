@@ -21,11 +21,16 @@ var utils = utils || {
 
         return true;
     },
+
     validateColor: function validateColor(color) {
         'use strict';
         return color === black || color === white;
-    }
+    },
+
+    BOARD_PATTERN : "   0  1  2  3  4  5  6  7\n  ╔══╦══╦══╦══╦══╦══╦══╦══╗\n 0║00║01║02║03║04║05║06║07║\n  ╠══╬══╬══╬══╬══╬══╬══╬══╣\n 1║10║11║12║13║14║15║16║17║\n  ╠══╬══╬══╬══╬══╬══╬══╬══╣\n 2║20║21║22║23║24║25║26║27║\n  ╠══╬══╬══╬══╬══╬══╬══╬══╣\n 3║30║31║32║33║34║35║36║37║\n  ╠══╬══╬══╬══╬══╬══╬══╬══╣\n 4║40║41║42║43║44║45║46║47║\n  ╠══╬══╬══╬══╬══╬══╬══╬══╣\n 5║50║51║52║53║54║55║56║57║\n  ╠══╬══╬══╬══╬══╬══╬══╬══╣\n 6║60║61║62║63║64║65║66║67║\n  ╠══╬══╬══╬══╬══╬══╬══╬══╣\n 7║70║71║72║73║74║75║76║77║\n  ╚══╩══╩══╩══╩══╩══╩══╩══╝"
 };
+
+
 var Corners = Corners || {
     // define board that exposes state object, functions : init(), setChecker(point, checker), pickChecker(point)
     Board: function Board(width, height) {
@@ -39,6 +44,8 @@ var Corners = Corners || {
         }
 
         var _state = [],
+
+            movesCount = 0,
 
             initialized = false,
 
@@ -136,6 +143,35 @@ var Corners = Corners || {
 
         Board.prototype.state = function state() {
             return _state;
+        };
+
+        Board.prototype.makeMove = function boardMakeMove(move) {
+            movesCount += 1;
+            var checker = this.pickChecker(move.pointFrom);
+            this.setChecker(move.pointTo, checker);
+            this.log();
+        };
+
+        Board.prototype.toString = function boardToString() {
+            var i,
+                j,
+                col,
+                result = utils.BOARD_PATTERN;
+            for (i = 0; i < 8; i += 1) {
+                col = _state[i];
+                for (j = 0; j < 8; j += 1) {
+                    result = result.replace(j + "" + i, col[j].color === null ? "  " : col[j].color === "WHITE" ? " ☺" : " ☻");
+                }
+            }
+
+            return result;
+
+        };
+
+        Board.prototype.log = function boardLog() {
+            console.group("MOVE " + movesCount);
+            console.log(this.toString());
+            console.groupEnd();
         };
     },
 
@@ -267,6 +303,9 @@ var Corners = Corners || {
             var isValid = true;
 
             isValid = isValid &&
+                !move.pointFrom.equalsTo(move.pointTo);
+
+            isValid = isValid &&
                 (this.isAdjacentLegalMove(move) ||
                  this.isHopLegalMove(move));
 
@@ -299,14 +338,31 @@ var Corners = Corners || {
             var success = true,
                 i,
                 j,
-                checkersInRow = 4,
-                checkersRows = 3;
+                checkersInRow = 3,
+                checkersRows = 4;
 
-            //                for (i = 0; i < checkersRows; i++) {
-            //
-            //                }
+            if (this.state !== Corners.GameState.INIT) {
+                throw new Error("positionCheckers() should be called within game initialization only");
+            }
+
+            for (i = 0; i < checkersRows; i += 1) {
+                for (j = 0; j < checkersInRow; j += 1) {
+                    success = success && this.board.setChecker(new Corners.Point(i, j), white) &&
+                        this.board.setChecker(new Corners.Point(this.board.width - 1 - i, this.board.height - 1 - j), black);
+                }
+            }
+
+            if (success) {
+                this.board.log();
+            }
 
             return success;
+        };
+
+        Game.prototype.isOver = function gameIsOver() {
+            var isOver = false;
+
+            return isOver;
         };
 
         Game.prototype.init = function initGame() {
@@ -329,8 +385,7 @@ var Corners = Corners || {
         Game.prototype.nextMove = function nextMove() {
 
             var success = this.state === Corners.GameState.INGAME,
-                move,
-                checker;
+                move;
 
             if (!success) {
                 throw new Error("Game should be initialized before player moves.");
@@ -341,8 +396,7 @@ var Corners = Corners || {
             success = success && this.validateMove(move);
 
             if (success) {
-                checker = this.board.pickChecker(move.pointFrom);
-                this.board.setChecker(move.pointTo, checker);
+                this.board.makeMove(move);
                 currentPlayer = currentPlayer === this.player1 ? this.player2 : this.player1;
             }
 

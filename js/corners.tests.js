@@ -191,9 +191,9 @@ describe("Player.makeMove functionality", function() {
 
         TestPlayer.prototype.makeMove = function makeMove() {
             if(this.color === "WHITE") {
-                return new Corners.Move(new Corners.Point(0, 0), new Corners.Point(0, 1), this.color);
+                return new Corners.Move(new Corners.Point(0, 0), new Corners.Point(0, 2), this.color);
             } else {
-                return new Corners.Move(new Corners.Point(1, 1), new Corners.Point(2, 2), this.color);
+                return new Corners.Move(new Corners.Point(0, 1), new Corners.Point(1,1), this.color);
             }
         };
 
@@ -205,13 +205,13 @@ describe("Player.makeMove functionality", function() {
 
         thegame.init();
         thegame.board.setChecker({x : 0, y : 0}, "WHITE");
-        thegame.board.setChecker({x : 1, y : 1}, "BLACK");
+        thegame.board.setChecker({x : 0, y : 1}, "BLACK");
 
 
-    it("should succeed on correct moves", function() {
+    it("should succeed on correct moves and fail on wrong moves", function() {
         expect(thegame.board.state()).toEqual([
             [{color : "WHITE"},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
-            [{color : null},{color : "BLACK"},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
+            [{color : "BLACK"},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
             [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
             [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
             [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
@@ -220,26 +220,12 @@ describe("Player.makeMove functionality", function() {
             [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}]
         ]);
 
-        expect(thegame.nextMove()).toBeTruthy();    // white 0,0 => 0,1
+        expect(thegame.nextMove()).toBeTruthy();    // white 0,0 => 0,2
 
         expect(thegame.board.state()).toEqual([
-            [{color : null},{color : "WHITE"},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
-            [{color : null},{color : "BLACK"},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
             [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
-            [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
-            [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
-            [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
-            [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
-            [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}]
-        ]);
-
-    });
-
-    it("should fail on wrong moves", function() {
-        expect(thegame.board.state()).toEqual([
+            [{color : "BLACK"},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
             [{color : "WHITE"},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
-            [{color : null},{color : "BLACK"},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
-            [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
             [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
             [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
             [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
@@ -247,18 +233,17 @@ describe("Player.makeMove functionality", function() {
             [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}]
         ]);
 
-        expect(thegame.nextMove()).toBeFalsy();    // black 1,1 => 2,2
+        expect(thegame.nextMove()).toBeTruthy();    // black 0,1 => 1,1
 
         expect(thegame.board.state()).toEqual([
-            [{color : null},{color : "WHITE"},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
-            [{color : null},{color : "BLACK"},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
             [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
+            [{color : null},{color : "BLACK"},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
+            [{color : "WHITE"},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
             [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
             [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
             [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
             [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
             [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}]
         ]);
-
     });
 });
