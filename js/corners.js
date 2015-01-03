@@ -89,7 +89,7 @@ var Corners = Corners || {
             var x, y, col, occupant;
             // board not initialized
             if (!initialized) {
-                throw new Error("Board should be initialized before setChecker call.");
+                throw new Error("Board should be initialized before setChecker call");
             }
             // invalid params
             if (!utils.validateColor(color) || !utils.validatePoint(point, this.width, this.height)) {
@@ -107,7 +107,7 @@ var Corners = Corners || {
 
         Board.prototype.getChecker = function getChecker(point) {
             if (!initialized) {
-                throw new Error("Board should be initialized before getChecker call.");
+                throw new Error("Board should be initialized before getChecker call");
             }
 
             if (!utils.validatePoint(point, this.width, this.height)) {
@@ -239,6 +239,7 @@ var Corners = Corners || {
 
         this.player1 = null;
         this.player2 = null;
+        this.ui = null;
         this.board = new Corners.Board();
 
         this.state = Corners.GameState.INIT;
@@ -360,14 +361,47 @@ var Corners = Corners || {
         };
 
         Game.prototype.isOver = function gameIsOver() {
-            var isOver = false;
+            var whiteWin = true,
+                blackWin = true,
+                i,
+                j,
+                checkersInRow = 3,
+                checkersRows = 4;
 
-            return isOver;
+
+            if (this.state !== Corners.GameState.INGAME) {
+                throw new Error("isOver() should be called within game in progress only");
+            }
+
+            for (i = 0; i < checkersRows; i += 1) {
+                for (j = 0; j < checkersInRow; j += 1) {
+                    blackWin = blackWin && this.board.getChecker(new Corners.Point(i, j)) === black;
+                    whiteWin = whiteWin && this.board.getChecker(new Corners.Point(this.board.width - 1 - i, this.board.height - 1 - j)) === white;
+                    if (!blackWin && !whiteWin) {
+                        break;
+                    }
+                }
+                if (!blackWin && !whiteWin) {
+                    break;
+                }
+            }
+
+            if (whiteWin) {
+                if (blackWin) {
+                    this.state = Corners.GameState.DRAW;
+                } else {
+                    this.state = Corners.GameState.PLAYER1WIN;
+                }
+            } else if (blackWin) {
+                this.state = Corners.GameState.PLAYER2WIN;
+            }
+
+            return this.state !== Corners.GameState.INGAME;
         };
 
         Game.prototype.init = function initGame() {
-            if (!this.player1 || !this.player2 || this.player1.color !== white || this.player2.color !== black) {
-                throw new Error("Game should get valid Players before initialization");
+            if (!this.ui || !this.player1 || !this.player2 || this.player1.color !== white || this.player2.color !== black) {
+                throw new Error("Game should get valid Players and UI element before initialization");
             }
 
             var success = true;
@@ -388,7 +422,7 @@ var Corners = Corners || {
                 move;
 
             if (!success) {
-                throw new Error("Game should be initialized before player moves.");
+                throw new Error("Game should be initialized before player moves");
             }
 
             move = currentPlayer.makeMove();
@@ -401,6 +435,68 @@ var Corners = Corners || {
             }
 
             return success;
+        };
+
+        Game.prototype.start = function gameStart(player1, player2, ui) {
+            this.player1 = player1;
+            this.player2 = player2;
+            this.ui = ui;
+
+            this.init();
+
+            var gameStarted,
+                gameOver,
+                gameMove;
+
+            gameStarted = new CustomEvent("gameStarted", {
+                detail: {
+                    player1 : this.player1,
+                    player2 : this.player2
+                },
+                bubbles: true,
+                cancelable: false
+            });
+
+            this.ui.dispatchEvent(gameStarted);
+
+            while (!this.isOver()) {
+                if (this.nextMove()) {
+                    gameMove = new CustomEvent("gameMove", {
+                        detail : {
+                            board : this.board.state(),
+                            player : currentPlayer
+                        },
+                        bubbles: true,
+                        cancelable: false
+                    });
+
+                    ui.dispatchEvent(gameMove);
+                }
+                if (this.nextMove()) {
+                    gameMove = new CustomEvent("gameMove", {
+                        detail : {
+                            board : this.board.state(),
+                            player : currentPlayer,
+                            moveCount : this.board.movesCount
+                        },
+                        bubbles: true,
+                        cancelable: false
+                    });
+
+                    ui.dispatchEvent(gameMove);
+                }
+
+            }
+
+            gameOver = new CustomEvent("gameOver", {
+                detail : {
+                    gameState : this.state
+                },
+                bubbles: true,
+                cancelable: false
+            });
+
+
         };
     }
 };

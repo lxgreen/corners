@@ -1,7 +1,9 @@
+- add Game, Player events
+- test events
 + modify Player so it's instantiated with Game parameter, rather Board parameter.
-- retest Player makeMove()
-- Create Game object having Board and 2 Players (ctor'ed). Roles: init board positions for players, check moves validity,   check win/draw condition.
-- Game tests + Player retests
++ retest Player makeMove()
++ Create Game object having Board and 2 Players (ctor'ed). Roles: init board positions for players, check moves validity,   check win/draw condition.
+- test game.validateMove
 - Create Human Player as subobject of Player. Roles: get moves from user input.
 - Test HumanPlayer
 - Create AI Player as subobject of the Player. Roles: calculate moves proiority
