@@ -1,6 +1,3 @@
-var black = "BLACK",
-    white = "WHITE";
-
 var utils = utils || {
     validatePoint: function validatePoint(point, w, h) {
         'use strict';
@@ -24,7 +21,7 @@ var utils = utils || {
 
     validateColor: function validateColor(color) {
         'use strict';
-        return color === black || color === white;
+        return color === "BLACK" || color === "WHITE";
     },
 
     BOARD_PATTERN : "   0  1  2  3  4  5  6  7\n  ╔══╦══╦══╦══╦══╦══╦══╦══╗\n 0║00║01║02║03║04║05║06║07║\n  ╠══╬══╬══╬══╬══╬══╬══╬══╣\n 1║10║11║12║13║14║15║16║17║\n  ╠══╬══╬══╬══╬══╬══╬══╬══╣\n 2║20║21║22║23║24║25║26║27║\n  ╠══╬══╬══╬══╬══╬══╬══╬══╣\n 3║30║31║32║33║34║35║36║37║\n  ╠══╬══╬══╬══╬══╬══╬══╬══╣\n 4║40║41║42║43║44║45║46║47║\n  ╠══╬══╬══╬══╬══╬══╬══╬══╣\n 5║50║51║52║53║54║55║56║57║\n  ╠══╬══╬══╬══╬══╬══╬══╬══╣\n 6║60║61║62║63║64║65║66║67║\n  ╠══╬══╬══╬══╬══╬══╬══╬══╣\n 7║70║71║72║73║74║75║76║77║\n  ╚══╩══╩══╩══╩══╩══╩══╩══╝"
@@ -38,14 +35,13 @@ var Corners = Corners || {
 
         this.width = width || 8;
         this.height = height || 8;
+        this.movesCount = 0;
 
         if (this.width <= 0 || this.height <= 0) {
             throw new Error("Invalid Board dimensions");
         }
 
         var _state = [],
-
-            movesCount = 0,
 
             initialized = false,
 
@@ -84,7 +80,7 @@ var Corners = Corners || {
         };
 
 
-        // point : {x, y}, checker = "black" || "white"
+        // point : {x, y}, checker = Corners.GameColor.BLACK || Corners.GameColor.WHITE
         Board.prototype.setChecker = function setChecker(point, color) {
             var x, y, col, occupant;
             // board not initialized
@@ -98,7 +94,7 @@ var Corners = Corners || {
 
             occupant = getColor(point);
             // cell is occupied
-            if (occupant === black || occupant === white) {
+            if (occupant === Corners.GameColor.BLACK || occupant === Corners.GameColor.WHITE) {
                 return false;
             }
             setColor(point, color);
@@ -146,7 +142,7 @@ var Corners = Corners || {
         };
 
         Board.prototype.makeMove = function boardMakeMove(move) {
-            movesCount += 1;
+            this.movesCount += 1;
             var checker = this.pickChecker(move.pointFrom);
             this.setChecker(move.pointTo, checker);
             this.log();
@@ -169,7 +165,7 @@ var Corners = Corners || {
         };
 
         Board.prototype.log = function boardLog() {
-            console.group("MOVE " + movesCount);
+            console.group("MOVE " + this.movesCount);
             console.log(this.toString());
             console.groupEnd();
         };
@@ -200,24 +196,14 @@ var Corners = Corners || {
 
     },
 
-    // define base player having color and game
-    Player: function Player(game, color) {
+    // define base player having color and name
+    Player: function Player(color, name) {
         'use strict';
         this.color = color || "WHITE";
-        this.game = game;
+        this.name = name || this.color;
 
         if (!utils.validateColor(this.color)) {
             throw new Error("Invalid Player color '" + this.color + "'");
-        }
-
-        if (!this.game || !this.game.nextMove || !this.game.board) {
-            throw new Error("Invalid Player Game");
-        }
-
-        if (this.color === white) {
-            this.game.player1 = this;
-        } else {
-            this.game.player2 = this;
         }
 
         Player.prototype.makeMove = function makeMove() {
@@ -232,6 +218,11 @@ var Corners = Corners || {
         DRAW : "DRAW",
         PLAYER1WIN : "PLAYER1WIN",
         PLAYER2WIN : "PLAYER2WIN"
+    },
+
+    GameColor: {
+        WHITE : "WHITE",
+        BLACK : "BLACK"
     },
 
     Game: function Game() {
@@ -348,8 +339,8 @@ var Corners = Corners || {
 
             for (i = 0; i < checkersRows; i += 1) {
                 for (j = 0; j < checkersInRow; j += 1) {
-                    success = success && this.board.setChecker(new Corners.Point(i, j), white) &&
-                        this.board.setChecker(new Corners.Point(this.board.width - 1 - i, this.board.height - 1 - j), black);
+                    success = success && this.board.setChecker(new Corners.Point(i, j), Corners.GameColor.WHITE) &&
+                        this.board.setChecker(new Corners.Point(this.board.width - 1 - i, this.board.height - 1 - j), Corners.GameColor.BLACK);
                 }
             }
 
@@ -375,8 +366,8 @@ var Corners = Corners || {
 
             for (i = 0; i < checkersRows; i += 1) {
                 for (j = 0; j < checkersInRow; j += 1) {
-                    blackWin = blackWin && this.board.getChecker(new Corners.Point(i, j)) === black;
-                    whiteWin = whiteWin && this.board.getChecker(new Corners.Point(this.board.width - 1 - i, this.board.height - 1 - j)) === white;
+                    blackWin = blackWin && this.board.getChecker(new Corners.Point(i, j)) === Corners.GameColor.BLACK;
+                    whiteWin = whiteWin && this.board.getChecker(new Corners.Point(this.board.width - 1 - i, this.board.height - 1 - j)) === Corners.GameColor.WHITE;
                     if (!blackWin && !whiteWin) {
                         break;
                     }
@@ -400,7 +391,7 @@ var Corners = Corners || {
         };
 
         Game.prototype.init = function initGame() {
-            if (!this.ui || !this.player1 || !this.player2 || this.player1.color !== white || this.player2.color !== black) {
+            if (!this.ui || !this.player1 || !this.player2 || this.player1.color !== Corners.GameColor.WHITE || this.player2.color !== Corners.GameColor.BLACK) {
                 throw new Error("Game should get valid Players and UI element before initialization");
             }
 
