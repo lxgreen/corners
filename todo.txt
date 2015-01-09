@@ -1,3 +1,5 @@
++ Add rules to README
+- Update Game, Cell according to latest game rules changes
 - add Game, Player events
 - test events
 + modify Player so it's instantiated with Game parameter, rather Board parameter.
