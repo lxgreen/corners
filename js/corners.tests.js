@@ -137,6 +137,32 @@ describe("utils.validateId functionality", function() {
     });
 });
 
+describe("utils.validateCell functionality", function() {
+    it("should validate cell { id : \"c00\", tile : null, point : {0, 0} }", function() {
+        var cell = new Corners.Cell(new Corners.Point(0, 0));
+        expect(utils.validateCell(cell)).toBeTruthy();
+    });
+    it("should validate cell { id : \"c77\", tile : { id : 't00', image : mock}, point : {7, 7} }", function() {
+        var cell = new Corners.Cell(new Corners.Point(7, 7));
+        cell.tile = new Corners.Tile("mockImage", "t00");
+        expect(utils.validateCell(cell)).toBeTruthy();
+    });
+    it("should fail cell with id '-5'", function() {
+        var cell = new Corners.Cell(new Corners.Point(0, 0));
+        cell.id = -5;
+        expect(utils.validateCell(cell)).toBeFalsy();
+    });
+    it("should fail null cell", function() {
+        expect(utils.validateCell(null)).toBeFalsy();
+    });
+});
+
+describe("utils.validateTile functionality", function() {
+});
+
+describe("utils.validateImage functionality", function() {
+});
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 describe("PLAYER API", function() {

@@ -35,17 +35,18 @@ var utils = utils || {
 
     validateCell: function validateCell(cell) {
         'use strict';
-        return !!cell; //TBC
+        return !!cell && utils.validateId(cell.id) && utils.validatePoint(cell.point) && utils.validateTile(cell.tile, true);
     },
 
     validateId: function validateId(id) {
         'use strict';
-        var isValid = !!id,
-            idNum = id.replace("c", "").replace("t", ""),
+        var isValid = !!id && (typeof id === "string"), idNum, num;
+
+        if(isValid) {
+            idNum = id.replace("c", "").replace("t", "");
             num = parseInt(idNum, 8);   //OCTAL!
-
-
-        isValid = isValid && !isNaN(num) && (num >= 0) && (num < 64);
+            isValid = isValid && !isNaN(num) && (num >= 0) && (num < 64);
+        }
 
         return isValid;
     },
