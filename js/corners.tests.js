@@ -1,6 +1,7 @@
-var board = new Corners.Board();
 
 describe("BOARD API", function() {
+    var board = new Corners.Board();
+
     it("should define board object", function() {
         expect(board).toBeDefined();
     });
@@ -11,93 +12,81 @@ describe("BOARD API", function() {
     it("should expose init() method", function(){
         expect(typeof board.init).toBe("function");
     });
-    it("should expose getChecker() method", function(){
-        expect(typeof board.getChecker).toBe("function");
+    it("should expose getTile() method", function(){
+        expect(typeof board.getTile).toBe("function");
     });
-    it("should expose setChecker() method", function(){
-        expect(typeof board.setChecker).toBe("function");
+    it("should expose setTile() method", function(){
+        expect(typeof board.setTile).toBe("function");
     });
-    it("should expose pickChecker() method", function(){
-        expect(typeof board.pickChecker).toBe("function");
+    it("should expose pickTile() method", function(){
+        expect(typeof board.pickTile).toBe("function");
     });
     it("should expose state() method", function(){
         expect(typeof board.state).toBe("function");
     });
-    it("should not expose _state object", function(){
-        expect(board._state).toBeUndefined();
+    it("should not expose cells object", function(){
+        expect(board.cells).toBeUndefined();
     });
-    it("should not expose getColor() method", function(){
-        expect(board.getColor).toBeUndefined();
-    });
-    it("should not expose setColor() method", function(){
-        expect(board.setColor).toBeUndefined();
+    it("should not expose getCell() method", function(){
+        expect(board.getCell).toBeUndefined();
     });
 });
 
 describe("board.init() + board.state() functionality", function() {
-
+    var board = new Corners.Board();
 
     it("should return empty array before init() call", function() {
-        board = new Corners.Board(8,8);
         expect(board.state()).toEqual([]);
     });
 
-    it("should return 8x8 object {color : null} array after init() call", function() {
+    it("should return 8x8 object {point: {x,y}, tile: null, id:\"cxy\"} array after init() call", function() {
         board.init();
-        expect(board.state()).toEqual([
-            [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
-            [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
-            [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
-            [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
-            [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
-            [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
-            [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
-            [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}]
-        ]);
 
-    });
+        var state = board.state(),
+            col = state[7],
+            cell = col[7],
+            point = cell.point,
+            tile = cell.tile,
+            id = cell.id;
 
-    it("should return immutable object array after init() call", function() {
-        var state = board.state();
-        state = 123;
-        expect(board.state()).toEqual([
-            [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
-            [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
-            [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
-            [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
-            [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
-            [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
-            [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
-            [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}]
-        ]);
+        expect(state.length).toEqual(8);
+        expect(col.length).toEqual(8);
+        expect(point).toEqual(new Corners.Point(7,7));
+        expect(tile).toBeNull();
+        expect(id).toBe("c77");
     });
 });
 
-describe("board.getChecker() + board.setChecker() + board.pickChecker() functionality", function() {
+describe("board.getTile() + board.setTile() + board.pickTile() functionality", function() {
+    var board = new Corners.Board(),
+        tile00 = new Corners.Tile("imageMock", "t00"),
+        tile11 = new Corners.Tile("imageMock", "t11");
+
     board.init();
-    it("should fail to get checker at {0,0} before setChecker() call", function() {
-        expect(board.getChecker({x : 0, y : 0})).toBeFalsy();
+
+    it("should get null tile at {7, 7} before setTile() call", function() {
+        expect(board.getTile(7, 7)).toBeNull();
     });
-    it("should succeed to set WHITE checker at {0,0}", function() {
-        expect(board.setChecker({x : 0, y : 0}, "WHITE")).toBeTruthy();
+    it("should succeed to set tile00 at {7, 7}", function() {
+        expect(board.setTile(7, 7, tile00)).toBeTruthy();
     });
-    it("should succeed to get WHITE checker at {0,0} after setChecker() call", function() {
-        expect(board.getChecker({x : 0, y : 0})).toBe("WHITE");
+    it("should succeed to get tile at {7, 7} after setTile() call", function() {
+        expect(board.getTile(7, 7)).toEqual(tile00);
     });
-    it("should fail to set BLACK checker at {0,0} after setChecker() call", function() {
-        expect(board.setChecker({x : 0, y : 0}, "BLACK")).toBeFalsy();
+    it("should fail to set tile at {7, 7} after setTile() call", function() {
+        expect(board.setTile(7, 7, tile11)).toBeFalsy();
     });
-    it("should succeed to pick WHITE checker at {0,0} after setChecker() call", function() {
-        expect(board.pickChecker({x : 0, y : 0})).toBe("WHITE");
+    it("should succeed to pick tile from {7, 7} after setTile() call", function() {
+        expect(board.pickTile(7, 7)).toEqual(tile00);
     });
-    it("should fail to get checker at {0,0} after pickChecker() call", function() {
-        expect(board.getChecker({x : 0, y : 0})).toBeFalsy();
+    it("should fail to get tile at {7, 7} after pickTile() call", function() {
+        expect(board.getTile(7, 7)).toBeNull();
     });
-    it("should succeed to set BLACK checker at {0,0} after pickChecker() call", function() {
-        expect(board.setChecker({x : 0, y : 0}, "BLACK")).toBeTruthy();
+    it("should succeed to set tile at 7, 7} after pickTile() call", function() {
+        expect(board.setTile(7, 7, tile11)).toBeTruthy();
     });
-    it("should succeed to get BLACK checker at {0,0} after setChecker() call", function() {
-        expect(board.getChecker({x : 0, y : 0})).toBe("BLACK");
+    it("should succeed to get tile at {7, 7} after setTile() call", function() {
+        expect(board.getTile(7, 7)).toEqual(tile11);
     });
 });
 
@@ -107,8 +96,17 @@ describe("UTILS API", function() {
     it("should expose validatePoint() method", function() {
         expect(typeof utils.validatePoint).toBe("function");
     });
-    it("should expose validateColor() method", function() {
-        expect(typeof utils.validateColor).toBe("function");
+    it("should expose validateId() method", function() {
+        expect(typeof utils.validateId).toBe("function");
+    });
+    it("should expose validateCell() method", function() {
+        expect(typeof utils.validateCell).toBe("function");
+    });
+    it("should expose validateTile() method", function() {
+        expect(typeof utils.validateTile).toBe("function");
+    });
+    it("should expose validateImage() method", function() {
+        expect(typeof utils.validateImage).toBe("function");
     });
 });
 
@@ -124,18 +122,18 @@ describe("utils.validatePoint functionality", function() {
     });
 });
 
-describe("utils.validateColor functionality", function() {
-    it("should validate color 'WHITE'", function() {
-        expect(utils.validateColor("WHITE")).toBeTruthy();
+describe("utils.validateId functionality", function() {
+    it("should validate id 'c00'", function() {
+        expect(utils.validateId("c00")).toBeTruthy();
     });
-    it("should validate color 'BLACK'", function() {
-        expect(utils.validateColor("BLACK")).toBeTruthy();
+    it("should validate id 't77'", function() {
+        expect(utils.validateId("t77")).toBeTruthy();
     });
-    it("should fail color 'GREEN'", function() {
-        expect(utils.validateColor("GREEN")).toBeFalsy();
+    it("should fail id '-5'", function() {
+        expect(utils.validateId("-5")).toBeFalsy();
     });
-    it("should fail color ''", function() {
-        expect(utils.validateColor("")).toBeFalsy();
+    it("should fail id ''", function() {
+        expect(utils.validateId("")).toBeFalsy();
     });
 });
 
@@ -147,13 +145,7 @@ describe("PLAYER API", function() {
         blackPlayer = new Corners.Player(agame, "BLACK");
 
     it("should throw error on invalid game", function() {
-        expect(function(){var p = new Corners.Player(); }).toThrow(new Error("Invalid Player Game"));
-        expect(function(){var p = new Corners.Player(123); }).toThrow(new Error("Invalid Player Game"));
-
-    });
-
-    it("should throw error on invalid color", function() {
-        expect(function(){var p = new Corners.Player(agame, "GREEN"); }).toThrow(new Error("Invalid Player color 'GREEN'"));
+        expect(function(){var p = new Corners.Player(); }).toThrow(new Error("Invalid player name"));
     });
 
     it("should define default Player", function() {
@@ -204,8 +196,8 @@ describe("Player.makeMove functionality", function() {
         blackTestPlayer = new TestPlayer(thegame, "BLACK");
 
         thegame.init();
-        thegame.board.setChecker({x : 0, y : 0}, "WHITE");
-        thegame.board.setChecker({x : 0, y : 1}, "BLACK");
+        thegame.board.setTile({x : 0, y : 0}, "WHITE");
+        thegame.board.setTile({x : 0, y : 1}, "BLACK");
 
 
     it("should succeed on correct moves and fail on wrong moves", function() {

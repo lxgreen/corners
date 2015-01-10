@@ -19,9 +19,35 @@ var utils = utils || {
         return true;
     },
 
-    validateColor: function validateColor(color) {
+    validateTile: function validateTile(tile, isNullable) {
         'use strict';
-        return color === "BLACK" || color === "WHITE";
+        if (tile !== null) { // it's possible to have null tile
+            return utils.validateImage(tile.image) && utils.validateId(tile.id);
+        } else {
+            return !!isNullable;
+        }
+    },
+
+    validateImage: function validateImage(image) {
+        'use strict';
+        return !!image; //TBC
+    },
+
+    validateCell: function validateCell(cell) {
+        'use strict';
+        return !!cell; //TBC
+    },
+
+    validateId: function validateId(id) {
+        'use strict';
+        var isValid = !!id,
+            idNum = id.replace("c", "").replace("t", ""),
+            num = parseInt(idNum, 8);   //OCTAL!
+
+
+        isValid = isValid && !isNaN(num) && (num >= 0) && (num < 64);
+
+        return isValid;
     },
 
     BOARD_PATTERN : "   0  1  2  3  4  5  6  7\n  ╔══╦══╦══╦══╦══╦══╦══╦══╗\n 0║00║01║02║03║04║05║06║07║\n  ╠══╬══╬══╬══╬══╬══╬══╬══╣\n 1║10║11║12║13║14║15║16║17║\n  ╠══╬══╬══╬══╬══╬══╬══╬══╣\n 2║20║21║22║23║24║25║26║27║\n  ╠══╬══╬══╬══╬══╬══╬══╬══╣\n 3║30║31║32║33║34║35║36║37║\n  ╠══╬══╬══╬══╬══╬══╬══╬══╣\n 4║40║41║42║43║44║45║46║47║\n  ╠══╬══╬══╬══╬══╬══╬══╬══╣\n 5║50║51║52║53║54║55║56║57║\n  ╠══╬══╬══╬══╬══╬══╬══╬══╣\n 6║60║61║62║63║64║65║66║67║\n  ╠══╬══╬══╬══╬══╬══╬══╬══╣\n 7║70║71║72║73║74║75║76║77║\n  ╚══╩══╩══╩══╩══╩══╩══╩══╝"
@@ -29,7 +55,7 @@ var utils = utils || {
 
 
 var Corners = Corners || {
-    // define board that exposes state object, functions : init(), setChecker(point, checker), pickChecker(point)
+    // define board that exposes state object, functions : init(), setTile(point, checker), pickTile(point)
     Board: function Board(width, height) {
         'use strict';
 
@@ -41,37 +67,27 @@ var Corners = Corners || {
             throw new Error("Invalid Board dimensions");
         }
 
-        var _state = [],
+        var cells = [],
 
             initialized = false,
 
-            getColor = function getColor(point) {
-                var col = _state[point.x];
-                return col[point.y].color;
-            },
-
-            setColor = function setColor(point, color) {
-                var col = _state[point.x];
-                col[point.y].color = color;
-            },
-
-            resetColor = function resetColor(point) {
-                setColor(point, null);
+            getCell = function getCell(x, y) {
+                var col = cells[x];
+                return col[y];
             };
 
         // initialize board to empty
         Board.prototype.init = function initBoard() {
-            var col, i, j, w, h;
-            _state = [];
+            var col, i, j, w, h, point;
+            cells = [];
             for (i = 0, w = this.width; i < w; i += 1) {
                 col = [];
                 for (j = 0, h = this.height; j < h; j += 1) {
-                    col.push({
-                        color: null
-                    });
+                    point = new Corners.Point(i, j);
+                    col.push(new Corners.Cell(point));
                 }
 
-                _state.push(col);
+                cells.push(col);
             }
 
             initialized = true;
@@ -79,72 +95,82 @@ var Corners = Corners || {
             return initialized;
         };
 
-
-        // point : {x, y}, checker = Corners.GameColor.BLACK || Corners.GameColor.WHITE
-        Board.prototype.setChecker = function setChecker(point, color) {
-            var x, y, col, occupant;
+        Board.prototype.setTile = function setTile(x, y, tile) {
             // board not initialized
             if (!initialized) {
-                throw new Error("Board should be initialized before setChecker call");
+                throw new Error("Board should be initialized before setTile call");
             }
+
+            var col,
+                occupant,
+                cell = getCell(x, y);
+
             // invalid params
-            if (!utils.validateColor(color) || !utils.validatePoint(point, this.width, this.height)) {
+            if (!utils.validateTile(tile, true) || !utils.validateCell(cell)) {
                 return false;
             }
 
-            occupant = getColor(point);
+            occupant = cell.tile;
+
             // cell is occupied
-            if (occupant === Corners.GameColor.BLACK || occupant === Corners.GameColor.WHITE) {
+            if (occupant !== null) {
                 return false;
             }
-            setColor(point, color);
+
+            cell.tile = tile;
+
             return true;
         };
 
-        Board.prototype.getChecker = function getChecker(point) {
+        Board.prototype.getTile = function getTile(x, y) {
             if (!initialized) {
-                throw new Error("Board should be initialized before getChecker call");
+                throw new Error("Board should be initialized before getTile call");
             }
 
-            if (!utils.validatePoint(point, this.width, this.height)) {
+            var cell = getCell(x, y);
+
+            if (!utils.validateCell(cell)) {
                 return false;
             }
 
-            var color = getColor(point);
-
-            return color;
+            return cell.tile;
         };
 
+        // TODO UPDATE
         // removes and returns checker at point
-        Board.prototype.pickChecker = function pickChecher(point) {
+        Board.prototype.pickTile = function pickTile(x, y) {
 
-            var color = this.getChecker(point);
+            var tile = this.getTile(x, y);
 
-            if (!utils.validateColor(color)) {
+            if (!utils.validateTile(tile)) {
                 return false;
             }
 
-            resetColor(point);
+            var cell = getCell(x, y);
 
-            return color;
+            cell.tile = null;
+
+            return tile;
 
         };
 
-        Board.prototype.isFreeCell = function isFreeCell(point) {
+        Board.prototype.isFreeCell = function isFreeCell(x, y) {
+            var point = new Corners.Point(x, y);
             if (!utils.validatePoint(point)) {
                 throw new Error("Invalid point");
             }
-            return !getColor(point);
+            return !getCell(point);
         };
 
         Board.prototype.state = function state() {
-            return _state;
+            return cells;
         };
 
         Board.prototype.makeMove = function boardMakeMove(move) {
             this.movesCount += 1;
-            var checker = this.pickChecker(move.pointFrom);
-            this.setChecker(move.pointTo, checker);
+            // TODO UPDATE
+            var checker = this.pickTile(move.pointFrom);
+            this.setTile(move.pointTo, checker);
             this.log();
         };
 
@@ -154,20 +180,40 @@ var Corners = Corners || {
                 col,
                 result = utils.BOARD_PATTERN;
             for (i = 0; i < 8; i += 1) {
-                col = _state[i];
+                col = cells[i];
                 for (j = 0; j < 8; j += 1) {
-                    result = result.replace(j + "" + i, col[j].color === null ? "  " : col[j].color === "WHITE" ? " ☺" : " ☻");
+                    result = result.replace(j + "" + i, col[j].tile === null ? "  " : col[j].tile.id.replace("t", ""));
                 }
             }
 
             return result;
-
         };
 
         Board.prototype.log = function boardLog() {
             console.group("MOVE " + this.movesCount);
             console.log(this.toString());
             console.groupEnd();
+        };
+    },
+
+    Cell: function Cell(point) {
+        'use strict';
+
+        if (!utils.validatePoint(point)) {
+            throw new Error("Invalid Cell point");
+        }
+        this.point = point;
+        this.tile = null;
+        this.id = "c" + point.x + point.y;
+
+        Cell.prototype.isFree = function isFreeCell() {
+            return this.tile === null;
+        };
+
+        Cell.prototype.setTile = function setCellTile(tile) {
+            if (utils.validateTile(tile)) {
+                this.tile = tile;
+            }
         };
     },
 
@@ -182,11 +228,16 @@ var Corners = Corners || {
         };
     },
 
-    Move: function Move(pointFrom, pointTo, color) {
+    Move: function Move(pointFrom, pointTo, tile) {
         'use strict';
+
+        if (!utils.validateTile(tile)) {
+            throw new Error("Invalid tile to move");
+        }
+
         this.pointFrom = pointFrom;
         this.pointTo = pointTo;
-        this.color = color;
+        this.tile = tile;
 
         Move.prototype.equalsTo = function equalsToMove(move) {
             return this.pointFrom.equalsTo(move.pointFrom) &&
@@ -196,19 +247,35 @@ var Corners = Corners || {
 
     },
 
-    // define base player having color and name
-    Player: function Player(color, name) {
+    Tile: function Tile(image, id) {
         'use strict';
-        this.color = color || "WHITE";
-        this.name = name || this.color;
 
-        if (!utils.validateColor(this.color)) {
-            throw new Error("Invalid Player color '" + this.color + "'");
+        this.image = image;
+        this.id = id;
+    },
+
+    // define base player having name and tiles
+    Player: function Player(name) {
+        'use strict';
+
+        if(!name || name === "") {
+            throw new Error("Invalid player name");
         }
+
+        this.name = name.toString();
+
+        var tiles = [];
+
+        Player.prototype.addTile = function addPlayerTile(tile) {
+            if(!utils.validateTile(tile)) {
+                throw new Error("Invalid player tile");
+            }
+            tiles.push(tile);
+        };
 
         Player.prototype.makeMove = function makeMove() {
             // abstract
-            return new Corners.Move(new Corners.Point(0, 0), new Corners.Point(1, 1), this.color);
+            return new Corners.Move(new Corners.Point(0, 0), new Corners.Point(1, 1), tiles[0]);
         };
     },
 
@@ -218,11 +285,6 @@ var Corners = Corners || {
         DRAW : "DRAW",
         PLAYER1WIN : "PLAYER1WIN",
         PLAYER2WIN : "PLAYER2WIN"
-    },
-
-    GameColor: {
-        WHITE : "WHITE",
-        BLACK : "BLACK"
     },
 
     Game: function Game() {
@@ -310,12 +372,13 @@ var Corners = Corners || {
             var isValid = true;
 
             isValid = isValid &&
+                // TODO UPDATE
                 utils.validateColor(move.color) &&
                 utils.validatePoint(move.pointFrom, this.board.width, this.board.height) &&
                 utils.validatePoint(move.pointTo, this.board.width, this.board.height);
 
             isValid = isValid &&
-                this.board.getChecker(move.pointFrom) === move.color;
+                this.board.getTile(move.pointFrom) === move.color;
 
             isValid = isValid &&
                 this.board.isFreeCell(move.pointTo);
@@ -326,6 +389,7 @@ var Corners = Corners || {
             return isValid;
         };
 
+        // TODO UPDATE
         Game.prototype.positionCheckers = function positionCheckers() {
             var success = true,
                 i,
@@ -339,8 +403,8 @@ var Corners = Corners || {
 
             for (i = 0; i < checkersRows; i += 1) {
                 for (j = 0; j < checkersInRow; j += 1) {
-                    success = success && this.board.setChecker(new Corners.Point(i, j), Corners.GameColor.WHITE) &&
-                        this.board.setChecker(new Corners.Point(this.board.width - 1 - i, this.board.height - 1 - j), Corners.GameColor.BLACK);
+                    success = success && this.board.setTile(new Corners.Point(i, j), Corners.GameColor.WHITE) &&
+                        this.board.setTile(new Corners.Point(this.board.width - 1 - i, this.board.height - 1 - j), Corners.GameColor.BLACK);
                 }
             }
 
@@ -351,6 +415,7 @@ var Corners = Corners || {
             return success;
         };
 
+        // TODO UPDATE
         Game.prototype.isOver = function gameIsOver() {
             var whiteWin = true,
                 blackWin = true,
@@ -364,10 +429,11 @@ var Corners = Corners || {
                 throw new Error("isOver() should be called within game in progress only");
             }
 
+            // TODO UPDATE
             for (i = 0; i < checkersRows; i += 1) {
                 for (j = 0; j < checkersInRow; j += 1) {
-                    blackWin = blackWin && this.board.getChecker(new Corners.Point(i, j)) === Corners.GameColor.BLACK;
-                    whiteWin = whiteWin && this.board.getChecker(new Corners.Point(this.board.width - 1 - i, this.board.height - 1 - j)) === Corners.GameColor.WHITE;
+                    blackWin = blackWin && this.board.getTile(new Corners.Point(i, j)) === Corners.GameColor.BLACK;
+                    whiteWin = whiteWin && this.board.getTile(new Corners.Point(this.board.width - 1 - i, this.board.height - 1 - j)) === Corners.GameColor.WHITE;
                     if (!blackWin && !whiteWin) {
                         break;
                     }
@@ -377,6 +443,7 @@ var Corners = Corners || {
                 }
             }
 
+            // TODO: bug in case of player1 completes the game, and player2 has 1 move to complete
             if (whiteWin) {
                 if (blackWin) {
                     this.state = Corners.GameState.DRAW;
@@ -391,6 +458,7 @@ var Corners = Corners || {
         };
 
         Game.prototype.init = function initGame() {
+                                                              // TODO UPDATE
             if (!this.ui || !this.player1 || !this.player2 || this.player1.color !== Corners.GameColor.WHITE || this.player2.color !== Corners.GameColor.BLACK) {
                 throw new Error("Game should get valid Players and UI element before initialization");
             }
