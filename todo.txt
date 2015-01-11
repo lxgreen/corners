@@ -12,3 +12,4 @@
 - Create AIPlayer as subobject of the Player. Roles: calculate moves proiority
 - AIPlayer tests
 - UI
+- make protocol part to be non-obligatory in image validation

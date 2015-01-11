@@ -30,7 +30,8 @@ var utils = utils || {
 
     validateImage: function validateImage(image) {
         'use strict';
-        return !!image; //TBC
+        return !!image && (typeof image === "string") &&
+            /^(?:(?:https?|ftp):\/\/)(?:\S+(?::\S*)?@)?(?:(?!(?:10|127)(?:\.\d{1,3}){3})(?!(?:169\.254|192\.168)(?:\.\d{1,3}){2})(?!172\.(?:1[6-9]|2\d|3[0-1])(?:\.\d{1,3}){2})(?:[1-9]\d?|1\d\d|2[01]\d|22[0-3])(?:\.(?:1?\d{1,2}|2[0-4]\d|25[0-5])){2}(?:\.(?:[1-9]\d?|1\d\d|2[0-4]\d|25[0-4]))|(?:(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)(?:\.(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)*(?:\.(?:[a-z\u00a1-\uffff]{2,})))(?::\d{2,5})?(?:\/\S*)?$/i.test(image);
     },
 
     validateCell: function validateCell(cell) {
@@ -42,7 +43,7 @@ var utils = utils || {
         'use strict';
         var isValid = !!id && (typeof id === "string"), idNum, num;
 
-        if(isValid) {
+        if (isValid) {
             idNum = id.replace("c", "").replace("t", "");
             num = parseInt(idNum, 8);   //OCTAL!
             isValid = isValid && !isNaN(num) && (num >= 0) && (num < 64);
@@ -141,13 +142,13 @@ var Corners = Corners || {
         // removes and returns checker at point
         Board.prototype.pickTile = function pickTile(x, y) {
 
-            var tile = this.getTile(x, y);
+            var tile = this.getTile(x, y), cell;
 
             if (!utils.validateTile(tile)) {
                 return false;
             }
 
-            var cell = getCell(x, y);
+            cell = getCell(x, y);
 
             cell.tile = null;
 
@@ -259,7 +260,7 @@ var Corners = Corners || {
     Player: function Player(name) {
         'use strict';
 
-        if(!name || name === "") {
+        if (!name || name === "") {
             throw new Error("Invalid player name");
         }
 
@@ -268,7 +269,7 @@ var Corners = Corners || {
         var tiles = [];
 
         Player.prototype.addTile = function addPlayerTile(tile) {
-            if(!utils.validateTile(tile)) {
+            if (!utils.validateTile(tile)) {
                 throw new Error("Invalid player tile");
             }
             tiles.push(tile);
