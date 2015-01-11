@@ -61,13 +61,25 @@ var Corners = Corners || {
     Board: function Board(width, height) {
         'use strict';
 
-        this.width = width || 8;
-        this.height = height || 8;
-        this.movesCount = 0;
+        this._width = width || 8;
+        this._height = height || 8;
+        this._movesCount = 0;
 
         if (this.width <= 0 || this.height <= 0) {
             throw new Error("Invalid Board dimensions");
         }
+
+        Object.defineProperties(this, {
+            "width": {
+                "get": function () { return this._width; }
+            },
+            "height": {
+                "get": function () { return this._height; }
+            },
+            "movesCount": {
+                "get": function () { return this._movesCount; }
+            }
+        });
 
         var cells = [],
 
@@ -204,9 +216,18 @@ var Corners = Corners || {
         if (!utils.validatePoint(point)) {
             throw new Error("Invalid Cell point");
         }
-        this.point = point;
+        this._point = point;
         this.tile = null;
-        this.id = "c" + point.x + point.y;
+        this._id = "c" + point.x + point.y;
+
+        Object.defineProperties(this, {
+            "point": {
+                "get": function () { return this._point; }
+            },
+            "id": {
+                "get": function () { return this._id; }
+            }
+        });
 
         Cell.prototype.isFree = function isFreeCell() {
             return this.tile === null;
@@ -221,8 +242,17 @@ var Corners = Corners || {
 
     Point: function Point(x, y) {
         'use strict';
-        this.x = x;
-        this.y = y;
+        this._x = x;
+        this._y = y;
+
+        Object.defineProperties(this, {
+            "x": {
+                "get": function () { return this._x; }
+            },
+            "y": {
+                "get": function () { return this._y; }
+            }
+        });
 
         Point.prototype.equalsTo = function equalsToPoint(point) {
             return this.x === point.x &&
@@ -237,9 +267,21 @@ var Corners = Corners || {
             throw new Error("Invalid tile to move");
         }
 
-        this.pointFrom = pointFrom;
-        this.pointTo = pointTo;
-        this.tile = tile;
+        this._pointFrom = pointFrom;
+        this._pointTo = pointTo;
+        this._tile = tile;
+
+        Object.defineProperties(this, {
+            "pointFrom": {
+                "get": function () { return this._pointFrom; }
+            },
+            "pointTo": {
+                "get": function () { return this._pointTo; }
+            },
+            "tile": {
+                "get": function () { return this._tile; }
+            }
+        });
 
         Move.prototype.equalsTo = function equalsToMove(move) {
             return this.pointFrom.equalsTo(move.pointFrom) &&
@@ -253,7 +295,13 @@ var Corners = Corners || {
         'use strict';
 
         this.image = image;
-        this.id = id;
+        this._id = id;
+
+        Object.defineProperties(this, {
+            "id": {
+                "get": function () { return this._id; }
+            }
+        });
     },
 
     // define base player having name and tiles
@@ -264,7 +312,13 @@ var Corners = Corners || {
             throw new Error("Invalid player name");
         }
 
-        this.name = name.toString();
+        this._name = name.toString();
+
+        Object.defineProperties(this, {
+            "name": {
+                "get": function () { return this._name; }
+            }
+        });
 
         var tiles = [];
 
@@ -292,12 +346,29 @@ var Corners = Corners || {
     Game: function Game() {
         "use strict";
 
-        this.player1 = null;
-        this.player2 = null;
-        this.ui = null;
-        this.board = new Corners.Board();
+        this._player1 = null;
+        this._player2 = null;
+        this._ui = null;
+        this._board = new Corners.Board();
+        this._state = Corners.GameState.INIT;
 
-        this.state = Corners.GameState.INIT;
+        Object.defineProperties(this, {
+            "board": {
+                "get": function () { return this._board; }
+            },
+            "state": {
+                "get": function () { return this._state; }
+            },
+            "player1": {
+                "get": function () { return this._player1; }
+            },
+            "player2": {
+                "get": function () { return this._player2; }
+            },
+            "ui": {
+                "get": function () { return this._ui; }
+            }
+        });
 
         var currentPlayer = null;
 
@@ -319,15 +390,15 @@ var Corners = Corners || {
                 pointNextToDown;
 
 
-            if (utils.validatePoint(pointToRight, this.board.width, this.board.height) && !this.board.isFreeCell(pointToRight)) {
+            if (utils.validatePoint(pointToRight, this._board.width, this._board.height) && !this._board.isFreeCell(pointToRight)) {
 
                 pointNextToRight = new Corners.Point(pointToRight.x + 1, pointToRight.y);
 
-                if (utils.validatePoint(pointNextToRight, this.board.width, this.board.height) && this.board.isFreeCell(pointNextToRight)) {
+                if (utils.validatePoint(pointNextToRight, this._board.width, this._board.height) && this.board.isFreeCell(pointNextToRight)) {
                     return move.pointTo.equalsTo(pointNextToRight) || isHopLegalMove(new Corners.Move(pointNextToRight, move.pointTo, move.color));
                 }
             }
-            if (utils.validatePoint(pointToLeft, this.board.width, this.board.height) && !this.board.isFreeCell(pointToLeft)) {
+            if (utils.validatePoint(pointToLeft, this._board.width, this.board._height) && !this.board.isFreeCell(pointToLeft)) {
 
                 pointNextToLeft = new Corners.Point(pointToLeft.x - 1, pointToLeft.y);
 
@@ -335,19 +406,19 @@ var Corners = Corners || {
                     return move.pointTo.equalsTo(pointNextToLeft) || isHopLegalMove(new Corners.Move(pointNextToLeft, move.pointTo, move.color));
                 }
             }
-            if (utils.validatePoint(pointToUp, this.board.width, this.board.height) && !this.board.isFreeCell(pointToUp)) {
+            if (utils.validatePoint(pointToUp, this._board.width, this._board.height) && !this.board.isFreeCell(pointToUp)) {
 
                 pointNextToUp = new Corners.Point(pointToUp.x, pointToUp.y - 1);
 
-                if (utils.validatePoint(pointNextToUp, this.board.width, this.board.height) && this.board.isFreeCell(pointNextToUp)) {
+                if (utils.validatePoint(pointNextToUp, this._board.width, this._board.height) && this.board.isFreeCell(pointNextToUp)) {
                     return move.pointTo.equalsTo(pointNextToUp) || isHopLegalMove(new Corners.Move(pointNextToUp, move.pointTo, move.color));
                 }
             }
-            if (utils.validatePoint(pointToDown, this.board.width, this.board.height) && !this.board.isFreeCell(pointToDown)) {
+            if (utils.validatePoint(pointToDown, this._board.width, this._board.height) && !this.board.isFreeCell(pointToDown)) {
 
                 pointNextToDown = new Corners.Point(pointToDown.x, pointToDown.y + 1);
 
-                if (utils.validatePoint(pointNextToDown, this.board.width, this.board.height) && this.board.isFreeCell(pointNextToDown)) {
+                if (utils.validatePoint(pointNextToDown, this._board.width, this._board.height) && this.board.isFreeCell(pointNextToDown)) {
                     return move.pointTo.equalsTo(pointNextToDown) || isHopLegalMove(new Corners.Move(pointNextToDown, move.pointTo, move.color));
                 }
             }
@@ -376,14 +447,14 @@ var Corners = Corners || {
             isValid = isValid &&
                 // TODO UPDATE
                 utils.validateColor(move.color) &&
-                utils.validatePoint(move.pointFrom, this.board.width, this.board.height) &&
-                utils.validatePoint(move.pointTo, this.board.width, this.board.height);
+                utils.validatePoint(move.pointFrom, this._board.width, this._board.height) &&
+                utils.validatePoint(move.pointTo, this._board.width, this._board.height);
 
             isValid = isValid &&
-                this.board.getTile(move.pointFrom) === move.color;
+                this._board.getTile(move.pointFrom) === move.color;
 
             isValid = isValid &&
-                this.board.isFreeCell(move.pointTo);
+                this._board.isFreeCell(move.pointTo);
 
             isValid = isValid &&
                 this.isLegalMove(move);
@@ -405,13 +476,13 @@ var Corners = Corners || {
 
             for (i = 0; i < checkersRows; i += 1) {
                 for (j = 0; j < checkersInRow; j += 1) {
-                    success = success && this.board.setTile(new Corners.Point(i, j), Corners.GameColor.WHITE) &&
-                        this.board.setTile(new Corners.Point(this.board.width - 1 - i, this.board.height - 1 - j), Corners.GameColor.BLACK);
+                    success = success && this._board.setTile(new Corners.Point(i, j), Corners.GameColor.WHITE) &&
+                        this._board.setTile(new Corners.Point(this._board.width - 1 - i, this._board.height - 1 - j), Corners.GameColor.BLACK);
                 }
             }
 
             if (success) {
-                this.board.log();
+                this._board.log();
             }
 
             return success;
@@ -427,15 +498,15 @@ var Corners = Corners || {
                 checkersRows = 4;
 
 
-            if (this.state !== Corners.GameState.INGAME) {
+            if (this._state !== Corners.GameState.INGAME) {
                 throw new Error("isOver() should be called within game in progress only");
             }
 
             // TODO UPDATE
             for (i = 0; i < checkersRows; i += 1) {
                 for (j = 0; j < checkersInRow; j += 1) {
-                    blackWin = blackWin && this.board.getTile(new Corners.Point(i, j)) === Corners.GameColor.BLACK;
-                    whiteWin = whiteWin && this.board.getTile(new Corners.Point(this.board.width - 1 - i, this.board.height - 1 - j)) === Corners.GameColor.WHITE;
+                    blackWin = blackWin && this._board.getTile(new Corners.Point(i, j)) === Corners.GameColor.BLACK;
+                    whiteWin = whiteWin && this._board.getTile(new Corners.Point(this._board.width - 1 - i, this._board.height - 1 - j)) === Corners.GameColor.WHITE;
                     if (!blackWin && !whiteWin) {
                         break;
                     }
@@ -448,15 +519,15 @@ var Corners = Corners || {
             // TODO: bug in case of player1 completes the game, and player2 has 1 move to complete
             if (whiteWin) {
                 if (blackWin) {
-                    this.state = Corners.GameState.DRAW;
+                    this._state = Corners.GameState.DRAW;
                 } else {
-                    this.state = Corners.GameState.PLAYER1WIN;
+                    this._state = Corners.GameState.PLAYER1WIN;
                 }
             } else if (blackWin) {
-                this.state = Corners.GameState.PLAYER2WIN;
+                this._state = Corners.GameState.PLAYER2WIN;
             }
 
-            return this.state !== Corners.GameState.INGAME;
+            return this._state !== Corners.GameState.INGAME;
         };
 
         Game.prototype.init = function initGame() {
@@ -467,11 +538,11 @@ var Corners = Corners || {
 
             var success = true;
 
-            success = success && this.board.init() && this.positionCheckers();
+            success = success && this._board.init() && this.positionCheckers();
 
             if (success) {
-                currentPlayer = this.player1;
-                this.state = Corners.GameState.INGAME;
+                currentPlayer = this._player1;
+                this._state = Corners.GameState.INGAME;
             }
 
             return success;
@@ -491,17 +562,17 @@ var Corners = Corners || {
             success = success && this.validateMove(move);
 
             if (success) {
-                this.board.makeMove(move);
-                currentPlayer = currentPlayer === this.player1 ? this.player2 : this.player1;
+                this._board.makeMove(move);
+                currentPlayer = currentPlayer === this._player1 ? this._player2 : this._player1;
             }
 
             return success;
         };
 
         Game.prototype.start = function gameStart(player1, player2, ui) {
-            this.player1 = player1;
-            this.player2 = player2;
-            this.ui = ui;
+            this._player1 = player1;
+            this._player2 = player2;
+            this._ui = ui;
 
             this.init();
 
@@ -511,27 +582,28 @@ var Corners = Corners || {
 
             gameStarted = new CustomEvent("gameStarted", {
                 detail: {
-                    player1 : this.player1,
-                    player2 : this.player2
+                    player1 : this._player1,
+                    player2 : this._player2
                 },
                 bubbles: true,
                 cancelable: false
             });
 
-            this.ui.dispatchEvent(gameStarted);
+            this._ui.dispatchEvent(gameStarted);
 
             while (!this.isOver()) {
                 if (this.nextMove()) {
                     gameMove = new CustomEvent("gameMove", {
                         detail : {
                             board : this.board.state(),
-                            player : currentPlayer
+                            player : currentPlayer,
+                            moveCount : this.board.movesCount
                         },
                         bubbles: true,
                         cancelable: false
                     });
 
-                    ui.dispatchEvent(gameMove);
+                    this._ui.dispatchEvent(gameMove);
                 }
                 if (this.nextMove()) {
                     gameMove = new CustomEvent("gameMove", {
@@ -544,7 +616,7 @@ var Corners = Corners || {
                         cancelable: false
                     });
 
-                    ui.dispatchEvent(gameMove);
+                    this._ui.dispatchEvent(gameMove);
                 }
 
             }
@@ -557,6 +629,7 @@ var Corners = Corners || {
                 cancelable: false
             });
 
+            this._ui.dispatchEvent(gameOver);
 
         };
     }

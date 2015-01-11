@@ -147,11 +147,7 @@ describe("utils.validateCell functionality", function() {
         cell.tile = new Corners.Tile("https://imageMock.com/img.gif", "t00");
         expect(utils.validateCell(cell)).toBeTruthy();
     });
-    it("should fail cell with id '-5'", function() {
-        var cell = new Corners.Cell(new Corners.Point(0, 0));
-        cell.id = -5;
-        expect(utils.validateCell(cell)).toBeFalsy();
-    });
+
     it("should fail null cell", function() {
         expect(utils.validateCell(null)).toBeFalsy();
     });
@@ -163,7 +159,7 @@ describe("utils.validateTile functionality", function() {
         expect(utils.validateTile(tile)).toBeTruthy();
     });
 
-    it("should fail cell without id", function() {
+    it("should fail tile without id", function() {
         var tile = new Corners.Tile("https://imageMock.com/img.gif");
         expect(utils.validateTile(tile)).toBeFalsy();
     });
