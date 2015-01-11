@@ -194,32 +194,28 @@ describe("utils.validateImage functionality", function() {
 
 describe("PLAYER API", function() {
     var agame = new Corners.Game(),
-        whitePlayer = new Corners.Player(agame),
-        blackPlayer = new Corners.Player(agame, "BLACK");
+        whitePlayer = new Corners.Player("p1"),
+        blackPlayer = new Corners.Player("p2");
 
     it("should throw error on invalid game", function() {
         expect(function(){var p = new Corners.Player(); }).toThrow(new Error("Invalid player name"));
     });
 
-    it("should define default Player", function() {
+    it("should define Player", function() {
         expect(whitePlayer).toBeDefined();
     });
 
-    it("should expose Player's color", function() {
-        expect(whitePlayer.color).toBe("WHITE");
-        expect(blackPlayer.color).toBe("BLACK");
-    });
-
-    it("should expose Player's game and its players", function() {
-        expect(whitePlayer.game).toBeDefined();
-        expect(whitePlayer.game.player1).toEqual(whitePlayer);
-        expect(whitePlayer.game.player2).toEqual(blackPlayer);
-        expect(blackPlayer.game.player1).toEqual(whitePlayer);
-        expect(blackPlayer.game.player2).toEqual(blackPlayer);
+    it("should expose Player's name", function() {
+        expect(whitePlayer.name).toBe("p1");
+        expect(blackPlayer.name).toBe("p2");
     });
 
     it("should expose makeMove()", function() {
         expect(typeof whitePlayer.makeMove).toBe("function");
+    });
+
+    it("should expose addTile()", function() {
+        expect(typeof whitePlayer.addTile).toBe("function");
     });
 });
 
