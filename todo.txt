@@ -1,4 +1,4 @@
-- add getters for read-only object fields (cell: id, point, tile: id, image, player: name, game: board, etc)
++ add getters for read-only object fields (cell: id, point, tile: id, image, player: name, game: board, etc)
 + Add rules to README
 - Update Game, Cell, Tile, Player according to latest game rule changes
 - add Game, Player events
