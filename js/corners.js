@@ -52,6 +52,42 @@ var utils = utils || {
         return isValid;
     },
 
+    iterator: function (collection) {
+        'use strict';
+        var index = 0;
+
+        if (!collection || !collection.length) {
+            return null;
+        } else {
+            return {
+                next: function () {
+                    if (index < collection.length) {
+                        return collection[index++];
+                    } else {
+                        return null;
+                    }
+                },
+
+                previous: function () {
+                    if (index >= 0) {
+                        return collection[index--];
+                    } else {
+                        return null;
+                    }
+                },
+
+                start: function () {
+                    index = 0;
+                    return collection[index++];
+                },
+
+                end: function () {
+                    return index >= collection.length;
+                },
+            };
+        }
+    },
+
     BOARD_PATTERN : "   0  1  2  3  4  5  6  7\n  ╔══╦══╦══╦══╦══╦══╦══╦══╗\n 0║00║01║02║03║04║05║06║07║\n  ╠══╬══╬══╬══╬══╬══╬══╬══╣\n 1║10║11║12║13║14║15║16║17║\n  ╠══╬══╬══╬══╬══╬══╬══╬══╣\n 2║20║21║22║23║24║25║26║27║\n  ╠══╬══╬══╬══╬══╬══╬══╬══╣\n 3║30║31║32║33║34║35║36║37║\n  ╠══╬══╬══╬══╬══╬══╬══╬══╣\n 4║40║41║42║43║44║45║46║47║\n  ╠══╬══╬══╬══╬══╬══╬══╬══╣\n 5║50║51║52║53║54║55║56║57║\n  ╠══╬══╬══╬══╬══╬══╬══╬══╣\n 6║60║61║62║63║64║65║66║67║\n  ╠══╬══╬══╬══╬══╬══╬══╬══╣\n 7║70║71║72║73║74║75║76║77║\n  ╚══╩══╩══╩══╩══╩══╩══╩══╝"
 };
 
@@ -314,13 +350,18 @@ var Corners = Corners || {
 
         this._name = name.toString();
 
+
+        var tiles = [];
+
         Object.defineProperties(this, {
             "name": {
                 "get": function () { return this._name; }
+            },
+
+            "tiles": {
+                "get": function () { return utils.iterator(tiles); }
             }
         });
-
-        var tiles = [];
 
         Player.prototype.addTile = function addPlayerTile(tile) {
             if (!utils.validateTile(tile)) {

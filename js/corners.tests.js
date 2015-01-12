@@ -1,95 +1,3 @@
-
-describe("BOARD API", function() {
-    var board = new Corners.Board();
-
-    it("should define board object", function() {
-        expect(board).toBeDefined();
-    });
-    it("should define board dimentions", function() {
-        expect(board.width).toEqual(8);
-        expect(board.height).toEqual(8);
-    });
-    it("should expose init() method", function(){
-        expect(typeof board.init).toBe("function");
-    });
-    it("should expose getTile() method", function(){
-        expect(typeof board.getTile).toBe("function");
-    });
-    it("should expose setTile() method", function(){
-        expect(typeof board.setTile).toBe("function");
-    });
-    it("should expose pickTile() method", function(){
-        expect(typeof board.pickTile).toBe("function");
-    });
-    it("should expose state() method", function(){
-        expect(typeof board.state).toBe("function");
-    });
-    it("should not expose cells object", function(){
-        expect(board.cells).toBeUndefined();
-    });
-    it("should not expose getCell() method", function(){
-        expect(board.getCell).toBeUndefined();
-    });
-});
-
-describe("board.init() + board.state() functionality", function() {
-    var board = new Corners.Board();
-
-    it("should return empty array before init() call", function() {
-        expect(board.state()).toEqual([]);
-    });
-
-    it("should return 8x8 object {point: {x,y}, tile: null, id:\"cxy\"} array after init() call", function() {
-        board.init();
-
-        var state = board.state(),
-            col = state[7],
-            cell = col[7],
-            point = cell.point,
-            tile = cell.tile,
-            id = cell.id;
-
-        expect(state.length).toEqual(8);
-        expect(col.length).toEqual(8);
-        expect(point).toEqual(new Corners.Point(7,7));
-        expect(tile).toBeNull();
-        expect(id).toBe("c77");
-    });
-});
-
-describe("board.getTile() + board.setTile() + board.pickTile() functionality", function() {
-    var board = new Corners.Board(),
-        tile00 = new Corners.Tile("https://imageMock.com/img.gif", "t00"),
-        tile11 = new Corners.Tile("https://imageMock.com/img.gif", "t11");
-
-    board.init();
-
-    it("should get null tile at {7, 7} before setTile() call", function() {
-        expect(board.getTile(7, 7)).toBeNull();
-    });
-    it("should succeed to set tile00 at {7, 7}", function() {
-        expect(board.setTile(7, 7, tile00)).toBeTruthy();
-    });
-    it("should succeed to get tile at {7, 7} after setTile() call", function() {
-        expect(board.getTile(7, 7)).toEqual(tile00);
-    });
-    it("should fail to set tile at {7, 7} after setTile() call", function() {
-        expect(board.setTile(7, 7, tile11)).toBeFalsy();
-    });
-    it("should succeed to pick tile from {7, 7} after setTile() call", function() {
-        expect(board.pickTile(7, 7)).toEqual(tile00);
-    });
-    it("should fail to get tile at {7, 7} after pickTile() call", function() {
-        expect(board.getTile(7, 7)).toBeNull();
-    });
-    it("should succeed to set tile at 7, 7} after pickTile() call", function() {
-        expect(board.setTile(7, 7, tile11)).toBeTruthy();
-    });
-    it("should succeed to get tile at {7, 7} after setTile() call", function() {
-        expect(board.getTile(7, 7)).toEqual(tile11);
-    });
-});
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 describe("UTILS API", function() {
@@ -190,7 +98,114 @@ describe("utils.validateImage functionality", function() {
     });
 });
 
+describe("utils.iterator functionality", function() {
+    var collection = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+    it("should iterate through collection", function() {
+        var it = utils.iterator(collection),
+            i = 0,
+            sum = 0;
+
+        for(i = it.start(); !it.end(); i = it.next()) {
+            sum += i;
+        }
+
+        expect(sum).toEqual(1 + 2 + 3 + 4 + 5 + 6 + 7 + 8 + 9);
+    });
+});
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+describe("BOARD API", function() {
+    var board = new Corners.Board();
+
+    it("should define board object", function() {
+        expect(board).toBeDefined();
+    });
+    it("should define board dimentions", function() {
+        expect(board.width).toEqual(8);
+        expect(board.height).toEqual(8);
+    });
+    it("should expose init() method", function(){
+        expect(typeof board.init).toBe("function");
+    });
+    it("should expose getTile() method", function(){
+        expect(typeof board.getTile).toBe("function");
+    });
+    it("should expose setTile() method", function(){
+        expect(typeof board.setTile).toBe("function");
+    });
+    it("should expose pickTile() method", function(){
+        expect(typeof board.pickTile).toBe("function");
+    });
+    it("should expose state() method", function(){
+        expect(typeof board.state).toBe("function");
+    });
+    it("should not expose cells object", function(){
+        expect(board.cells).toBeUndefined();
+    });
+    it("should not expose getCell() method", function(){
+        expect(board.getCell).toBeUndefined();
+    });
+});
+
+describe("board.init() + board.state() functionality", function() {
+    var board = new Corners.Board();
+
+    it("should return empty array before init() call", function() {
+        expect(board.state()).toEqual([]);
+    });
+
+    it("should return 8x8 object {point: {x,y}, tile: null, id:\"cxy\"} array after init() call", function() {
+        board.init();
+
+        var state = board.state(),
+            col = state[7],
+            cell = col[7],
+            point = cell.point,
+            tile = cell.tile,
+            id = cell.id;
+
+        expect(state.length).toEqual(8);
+        expect(col.length).toEqual(8);
+        expect(point).toEqual(new Corners.Point(7,7));
+        expect(tile).toBeNull();
+        expect(id).toBe("c77");
+    });
+});
+
+describe("board.getTile() + board.setTile() + board.pickTile() functionality", function() {
+    var board = new Corners.Board(),
+        tile00 = new Corners.Tile("https://imageMock.com/img.gif", "t00"),
+        tile11 = new Corners.Tile("https://imageMock.com/img.gif", "t11");
+
+    board.init();
+
+    it("should get null tile at {7, 7} before setTile() call", function() {
+        expect(board.getTile(7, 7)).toBeNull();
+    });
+    it("should succeed to set tile00 at {7, 7}", function() {
+        expect(board.setTile(7, 7, tile00)).toBeTruthy();
+    });
+    it("should succeed to get tile at {7, 7} after setTile() call", function() {
+        expect(board.getTile(7, 7)).toEqual(tile00);
+    });
+    it("should fail to set tile at {7, 7} after setTile() call", function() {
+        expect(board.setTile(7, 7, tile11)).toBeFalsy();
+    });
+    it("should succeed to pick tile from {7, 7} after setTile() call", function() {
+        expect(board.pickTile(7, 7)).toEqual(tile00);
+    });
+    it("should fail to get tile at {7, 7} after pickTile() call", function() {
+        expect(board.getTile(7, 7)).toBeNull();
+    });
+    it("should succeed to set tile at 7, 7} after pickTile() call", function() {
+        expect(board.setTile(7, 7, tile11)).toBeTruthy();
+    });
+    it("should succeed to get tile at {7, 7} after setTile() call", function() {
+        expect(board.getTile(7, 7)).toEqual(tile11);
+    });
+});
+
 
 describe("PLAYER API", function() {
     var agame = new Corners.Game(),
@@ -217,6 +232,11 @@ describe("PLAYER API", function() {
     it("should expose addTile()", function() {
         expect(typeof whitePlayer.addTile).toBe("function");
     });
+
+    it("should expose tiles iterator", function() {
+        expect(whitePlayer.tiles).toBeDefined();
+
+    });
 });
 
 describe("Player.makeMove functionality", function() {
@@ -241,8 +261,8 @@ describe("Player.makeMove functionality", function() {
     };
 
     var thegame = new Corners.Game(),
-        whiteTestPlayer = new TestPlayer(thegame),
-        blackTestPlayer = new TestPlayer(thegame, "BLACK");
+        whiteTestPlayer = new TestPlayer("WHITE"),
+        blackTestPlayer = new TestPlayer("BLACK");
 
         thegame.init();
         thegame.board.setTile({x : 0, y : 0}, "WHITE");
