@@ -61,16 +61,16 @@ var utils = utils || {
         } else {
             return {
                 next: function () {
-                    if (index < collection.length) {
-                        return collection[index++];
+                    if (index++ < collection.length) {
+                        return collection[index];
                     } else {
                         return null;
                     }
                 },
 
                 previous: function () {
-                    if (index >= 0) {
-                        return collection[index--];
+                    if (index-- >= 0) {
+                        return collection[index];
                     } else {
                         return null;
                     }
@@ -78,11 +78,11 @@ var utils = utils || {
 
                 start: function () {
                     index = 0;
-                    return collection[index++];
+                    return collection[0];
                 },
 
                 end: function () {
-                    return index >= collection.length;
+                    return index === collection.length;
                 },
             };
         }
