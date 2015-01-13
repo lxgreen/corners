@@ -121,28 +121,41 @@ describe("BOARD API", function() {
     it("should define board object", function() {
         expect(board).toBeDefined();
     });
+
     it("should define board dimentions", function() {
         expect(board.width).toEqual(8);
         expect(board.height).toEqual(8);
     });
+
     it("should expose init() method", function(){
         expect(typeof board.init).toBe("function");
     });
     it("should expose getTile() method", function(){
         expect(typeof board.getTile).toBe("function");
     });
+
     it("should expose setTile() method", function(){
         expect(typeof board.setTile).toBe("function");
     });
+
     it("should expose pickTile() method", function(){
         expect(typeof board.pickTile).toBe("function");
     });
+
     it("should expose state() method", function(){
         expect(typeof board.state).toBe("function");
     });
+
     it("should not expose cells object", function(){
         expect(board.cells).toBeUndefined();
     });
+
+    it("should not expose private properties", function(){
+        expect(board.h).toBeUndefined();
+        expect(board.w).toBeUndefined();
+        expect(board.height).toEqual(8);
+    });
+
     it("should not expose getCell() method", function(){
         expect(board.getCell).toBeUndefined();
     });
@@ -206,23 +219,24 @@ describe("board.getTile() + board.setTile() + board.pickTile() functionality", f
     });
 });
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 describe("PLAYER API", function() {
     var agame = new Corners.Game(),
         whitePlayer = new Corners.Player("p1"),
         blackPlayer = new Corners.Player("p2");
 
-    it("should throw error on invalid game", function() {
-        expect(function(){var p = new Corners.Player(); }).toThrow(new Error("Invalid player name"));
-    });
-
-    it("should define Player", function() {
+    it("should define player", function() {
         expect(whitePlayer).toBeDefined();
     });
 
-    it("should expose Player's name", function() {
+    it("should expose player's name", function() {
         expect(whitePlayer.name).toBe("p1");
         expect(blackPlayer.name).toBe("p2");
+    });
+
+    it("should throw error on invalid name", function() {
+        expect(function(){var p = new Corners.Player(); }).toThrow(new Error("Invalid player name"));
     });
 
     it("should expose makeMove()", function() {
@@ -233,78 +247,20 @@ describe("PLAYER API", function() {
         expect(typeof whitePlayer.addTile).toBe("function");
     });
 
-    it("should expose tiles iterator", function() {
+    it("should expose tiles", function() {
         expect(whitePlayer.tiles).toBeDefined();
 
     });
 });
 
 describe("Player.makeMove functionality", function() {
+    var player1 = new Corners.Player("p1"),
+        player2 = new Corners.Player("p2"),
+        game = new Corners.Game(),
+        ui = this.document;
+
+    game.init();
+    game.start(player1, player2, ui);
 
 
-    var TestPlayer = function TestPlayer(game, color) {
-        this.game = game;
-        this.color = color;
-
-        TestPlayer.prototype = new Corners.Player(game, color);
-
-        TestPlayer.prototype.constructor = TestPlayer;
-
-        TestPlayer.prototype.makeMove = function makeMove() {
-            if(this.color === "WHITE") {
-                return new Corners.Move(new Corners.Point(0, 0), new Corners.Point(0, 2), this.color);
-            } else {
-                return new Corners.Move(new Corners.Point(0, 1), new Corners.Point(1,1), this.color);
-            }
-        };
-
-    };
-
-    var thegame = new Corners.Game(),
-        whiteTestPlayer = new TestPlayer("WHITE"),
-        blackTestPlayer = new TestPlayer("BLACK");
-
-        thegame.init();
-        thegame.board.setTile({x : 0, y : 0}, "WHITE");
-        thegame.board.setTile({x : 0, y : 1}, "BLACK");
-
-
-    it("should succeed on correct moves and fail on wrong moves", function() {
-        expect(thegame.board.state()).toEqual([
-            [{color : "WHITE"},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
-            [{color : "BLACK"},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
-            [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
-            [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
-            [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
-            [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
-            [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
-            [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}]
-        ]);
-
-        expect(thegame.nextMove()).toBeTruthy();    // white 0,0 => 0,2
-
-        expect(thegame.board.state()).toEqual([
-            [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
-            [{color : "BLACK"},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
-            [{color : "WHITE"},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
-            [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
-            [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
-            [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
-            [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
-            [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}]
-        ]);
-
-        expect(thegame.nextMove()).toBeTruthy();    // black 0,1 => 1,1
-
-        expect(thegame.board.state()).toEqual([
-            [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
-            [{color : null},{color : "BLACK"},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
-            [{color : "WHITE"},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
-            [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
-            [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
-            [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
-            [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}],
-            [{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null},{color : null}]
-        ]);
-    });
 });

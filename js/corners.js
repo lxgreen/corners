@@ -83,7 +83,7 @@ var utils = utils || {
 
                 end: function () {
                     return index === collection.length;
-                },
+                }
             };
         }
     },
@@ -93,13 +93,20 @@ var utils = utils || {
 
 
 var Corners = Corners || {
-    // define board that exposes state object, functions : init(), setTile(point, checker), pickTile(point)
-    Board: function Board(width, height) {
+    // define board that exposes state object, functions : init(), setTile(point, tile), pickTile(point)
+    Board: function Board(w, h) {
         'use strict';
 
-        this._width = width || 8;
-        this._height = height || 8;
-        this._movesCount = 0;
+        var width = w || 8,
+            height = h || 8,
+            movesCount = 0,
+            cells = [],
+            initialized = false,
+
+            getCell = function getCell(x, y) {
+                var col = cells[x];
+                return col[y];
+            };
 
         if (this.width <= 0 || this.height <= 0) {
             throw new Error("Invalid Board dimensions");
@@ -107,24 +114,15 @@ var Corners = Corners || {
 
         Object.defineProperties(this, {
             "width": {
-                "get": function () { return this._width; }
+                "get": function () { return width; }
             },
             "height": {
-                "get": function () { return this._height; }
+                "get": function () { return height; }
             },
             "movesCount": {
-                "get": function () { return this._movesCount; }
+                "get": function () { return movesCount; }
             }
         });
-
-        var cells = [],
-
-            initialized = false,
-
-            getCell = function getCell(x, y) {
-                var col = cells[x];
-                return col[y];
-            };
 
         // initialize board to empty
         Board.prototype.init = function initBoard() {
@@ -146,14 +144,26 @@ var Corners = Corners || {
         };
 
         Board.prototype.setTile = function setTile(x, y, tile) {
+
+
+            var col,
+                occupant,
+                cell,
+                point;
+
+            if (utils.validatePoint(x) && utils.validateTile(y) && typeof tile === "undefined") {
+                tile = y;
+                point = x;
+                x = point.x;
+                y = point.y;
+            }
+
             // board not initialized
             if (!initialized) {
                 throw new Error("Board should be initialized before setTile call");
             }
 
-            var col,
-                occupant,
-                cell = getCell(x, y);
+            cell = getCell(x, y);
 
             // invalid params
             if (!utils.validateTile(tile, true) || !utils.validateCell(cell)) {
@@ -172,12 +182,22 @@ var Corners = Corners || {
             return true;
         };
 
+
         Board.prototype.getTile = function getTile(x, y) {
+
+            var cell, point;
+
+            if (utils.validatePoint(x) && typeof y === "undefined") {
+                point = x;
+                x = point.x;
+                y = point.y;
+            }
+
             if (!initialized) {
                 throw new Error("Board should be initialized before getTile call");
             }
 
-            var cell = getCell(x, y);
+            cell = getCell(x, y);
 
             if (!utils.validateCell(cell)) {
                 return false;
@@ -187,10 +207,18 @@ var Corners = Corners || {
         };
 
         // TODO UPDATE
-        // removes and returns checker at point
+        // removes and returns tile at point
         Board.prototype.pickTile = function pickTile(x, y) {
 
-            var tile = this.getTile(x, y), cell;
+            var cell, point, tile;
+
+            if (utils.validatePoint(x) && typeof y === "undefined") {
+                point = x;
+                x = point.x;
+                y = point.y;
+            }
+
+            tile = this.getTile(x, y);
 
             if (!utils.validateTile(tile)) {
                 return false;
@@ -205,7 +233,16 @@ var Corners = Corners || {
         };
 
         Board.prototype.isFreeCell = function isFreeCell(x, y) {
-            var point = new Corners.Point(x, y);
+
+            var point;
+
+            if (utils.validatePoint(x) && typeof y === "undefined") {
+                point = x;
+                x = point.x;
+                y = point.y;
+            }
+
+            point = new Corners.Point(x, y);
             if (!utils.validatePoint(point)) {
                 throw new Error("Invalid point");
             }
@@ -219,8 +256,8 @@ var Corners = Corners || {
         Board.prototype.makeMove = function boardMakeMove(move) {
             this.movesCount += 1;
             // TODO UPDATE
-            var checker = this.pickTile(move.pointFrom);
-            this.setTile(move.pointTo, checker);
+            var tile = this.pickTile(move.pointFrom);
+            this.setTile(move.pointTo, tile);
             this.log();
         };
 
@@ -252,16 +289,17 @@ var Corners = Corners || {
         if (!utils.validatePoint(point)) {
             throw new Error("Invalid Cell point");
         }
-        this._point = point;
+        var p = point,
+            id = "c" + point.x + point.y;
+
         this.tile = null;
-        this._id = "c" + point.x + point.y;
 
         Object.defineProperties(this, {
             "point": {
-                "get": function () { return this._point; }
+                "get": function () { return p; }
             },
             "id": {
-                "get": function () { return this._id; }
+                "get": function () { return id; }
             }
         });
 
@@ -278,15 +316,15 @@ var Corners = Corners || {
 
     Point: function Point(x, y) {
         'use strict';
-        this._x = x;
-        this._y = y;
+        var xCoord = x,
+            yCoord = y;
 
         Object.defineProperties(this, {
             "x": {
-                "get": function () { return this._x; }
+                "get": function () { return x; }
             },
             "y": {
-                "get": function () { return this._y; }
+                "get": function () { return y; }
             }
         });
 
@@ -299,23 +337,23 @@ var Corners = Corners || {
     Move: function Move(pointFrom, pointTo, tile) {
         'use strict';
 
-        if (!utils.validateTile(tile)) {
-            throw new Error("Invalid tile to move");
+        if (!utils.validateTile(tile) || !utils.validatePoint(pointFrom) || !utils.validatePoint(pointTo)) {
+            throw new Error("Invalid move params");
         }
 
-        this._pointFrom = pointFrom;
-        this._pointTo = pointTo;
-        this._tile = tile;
+        var pFrom = pointFrom,
+            pTo = pointTo,
+            t = tile;
 
         Object.defineProperties(this, {
             "pointFrom": {
-                "get": function () { return this._pointFrom; }
+                "get": function () { return pFrom; }
             },
             "pointTo": {
-                "get": function () { return this._pointTo; }
+                "get": function () { return pTo; }
             },
             "tile": {
-                "get": function () { return this._tile; }
+                "get": function () { return t; }
             }
         });
 
@@ -327,15 +365,15 @@ var Corners = Corners || {
 
     },
 
-    Tile: function Tile(image, id) {
+    Tile: function Tile(id) {
         'use strict';
 
-        this.image = image;
-        this._id = id;
+        this.image = null;
+        var identificator = id;
 
         Object.defineProperties(this, {
             "id": {
-                "get": function () { return this._id; }
+                "get": function () { return identificator; }
             }
         });
     },
@@ -348,18 +386,16 @@ var Corners = Corners || {
             throw new Error("Invalid player name");
         }
 
-        this._name = name.toString();
-
-
-        var tiles = [];
+        var n = name.toString(),
+            tiles = [];
 
         Object.defineProperties(this, {
             "name": {
-                "get": function () { return this._name; }
+                "get": function () { return n; }
             },
 
             "tiles": {
-                "get": function () { return utils.iterator(tiles); }
+                "get": function () { return tiles; }
             }
         });
 
@@ -387,31 +423,31 @@ var Corners = Corners || {
     Game: function Game() {
         "use strict";
 
-        this._player1 = null;
-        this._player2 = null;
-        this._ui = null;
-        this._board = new Corners.Board();
-        this._state = Corners.GameState.INIT;
+        var player1 = null,
+            player2 = null,
+            ui = null,
+            board = new Corners.Board(),
+            state = Corners.GameState.INIT,
+            currentPlayer = null;
 
         Object.defineProperties(this, {
             "board": {
-                "get": function () { return this._board; }
+                "get": function () { return board; }
             },
             "state": {
-                "get": function () { return this._state; }
+                "get": function () { return state; }
             },
             "player1": {
-                "get": function () { return this._player1; }
+                "get": function () { return player1; }
             },
             "player2": {
-                "get": function () { return this._player2; }
+                "get": function () { return player2; }
             },
             "ui": {
-                "get": function () { return this._ui; }
+                "get": function () { return ui; }
             }
         });
 
-        var currentPlayer = null;
 
         Game.prototype.isAdjacentLegalMove = function isAdjacentLegalMove(move) {
             return move.pointFrom.equalsTo(new Corners.Point(move.pointTo.x - 1, move.pointTo.y)) ||
@@ -431,15 +467,15 @@ var Corners = Corners || {
                 pointNextToDown;
 
 
-            if (utils.validatePoint(pointToRight, this._board.width, this._board.height) && !this._board.isFreeCell(pointToRight)) {
+            if (utils.validatePoint(pointToRight, this.board.width, this.board.height) && !this.board.isFreeCell(pointToRight)) {
 
                 pointNextToRight = new Corners.Point(pointToRight.x + 1, pointToRight.y);
 
-                if (utils.validatePoint(pointNextToRight, this._board.width, this._board.height) && this.board.isFreeCell(pointNextToRight)) {
+                if (utils.validatePoint(pointNextToRight, this.board.width, this.board.height) && this.board.isFreeCell(pointNextToRight)) {
                     return move.pointTo.equalsTo(pointNextToRight) || isHopLegalMove(new Corners.Move(pointNextToRight, move.pointTo, move.color));
                 }
             }
-            if (utils.validatePoint(pointToLeft, this._board.width, this.board._height) && !this.board.isFreeCell(pointToLeft)) {
+            if (utils.validatePoint(pointToLeft, this.board.width, this.board.height) && !this.board.isFreeCell(pointToLeft)) {
 
                 pointNextToLeft = new Corners.Point(pointToLeft.x - 1, pointToLeft.y);
 
@@ -447,19 +483,19 @@ var Corners = Corners || {
                     return move.pointTo.equalsTo(pointNextToLeft) || isHopLegalMove(new Corners.Move(pointNextToLeft, move.pointTo, move.color));
                 }
             }
-            if (utils.validatePoint(pointToUp, this._board.width, this._board.height) && !this.board.isFreeCell(pointToUp)) {
+            if (utils.validatePoint(pointToUp, this.board.width, this.board.height) && !this.board.isFreeCell(pointToUp)) {
 
                 pointNextToUp = new Corners.Point(pointToUp.x, pointToUp.y - 1);
 
-                if (utils.validatePoint(pointNextToUp, this._board.width, this._board.height) && this.board.isFreeCell(pointNextToUp)) {
+                if (utils.validatePoint(pointNextToUp, this.board.width, this.board.height) && this.board.isFreeCell(pointNextToUp)) {
                     return move.pointTo.equalsTo(pointNextToUp) || isHopLegalMove(new Corners.Move(pointNextToUp, move.pointTo, move.color));
                 }
             }
-            if (utils.validatePoint(pointToDown, this._board.width, this._board.height) && !this.board.isFreeCell(pointToDown)) {
+            if (utils.validatePoint(pointToDown, this.board.width, this.board.height) && !this.board.isFreeCell(pointToDown)) {
 
                 pointNextToDown = new Corners.Point(pointToDown.x, pointToDown.y + 1);
 
-                if (utils.validatePoint(pointNextToDown, this._board.width, this._board.height) && this.board.isFreeCell(pointNextToDown)) {
+                if (utils.validatePoint(pointNextToDown, this.board.width, this.board.height) && this.board.isFreeCell(pointNextToDown)) {
                     return move.pointTo.equalsTo(pointNextToDown) || isHopLegalMove(new Corners.Move(pointNextToDown, move.pointTo, move.color));
                 }
             }
@@ -476,26 +512,18 @@ var Corners = Corners || {
             isValid = isValid &&
                 (this.isAdjacentLegalMove(move) ||
                  this.isHopLegalMove(move));
-
-
             return isValid;
-
         };
 
         Game.prototype.validateMove = function validateMove(move) {
-            var isValid = true;
+            var isValid = true,
+                tile = this.board.getTile(move.pointFrom);
 
             isValid = isValid &&
-                // TODO UPDATE
-                utils.validateColor(move.color) &&
-                utils.validatePoint(move.pointFrom, this._board.width, this._board.height) &&
-                utils.validatePoint(move.pointTo, this._board.width, this._board.height);
+                 tile.id === move.tile.id;
 
             isValid = isValid &&
-                this._board.getTile(move.pointFrom) === move.color;
-
-            isValid = isValid &&
-                this._board.isFreeCell(move.pointTo);
+                this.board.isFreeCell(move.pointTo);
 
             isValid = isValid &&
                 this.isLegalMove(move);
@@ -504,26 +532,26 @@ var Corners = Corners || {
         };
 
         // TODO UPDATE
-        Game.prototype.positionCheckers = function positionCheckers() {
+        Game.prototype.positionTiles = function positionTiles() {
             var success = true,
                 i,
                 j,
-                checkersInRow = 3,
-                checkersRows = 4;
+                tilesInRow = 3,
+                tilesRows = 4;
 
             if (this.state !== Corners.GameState.INIT) {
-                throw new Error("positionCheckers() should be called within game initialization only");
+                throw new Error("positionTiles() should be called within game initialization only");
             }
 
-            for (i = 0; i < checkersRows; i += 1) {
-                for (j = 0; j < checkersInRow; j += 1) {
-                    success = success && this._board.setTile(new Corners.Point(i, j), Corners.GameColor.WHITE) &&
-                        this._board.setTile(new Corners.Point(this._board.width - 1 - i, this._board.height - 1 - j), Corners.GameColor.BLACK);
+            for (i = 0; i < tilesRows; i += 1) {
+                for (j = 0; j < tilesInRow; j += 1) {
+                    success = success && this.board.setTile(new Corners.Point(i, j), Corners.GameColor.WHITE) &&
+                        this.board.setTile(new Corners.Point(this.board.width - 1 - i, this.board.height - 1 - j), Corners.GameColor.BLACK);
                 }
             }
 
             if (success) {
-                this._board.log();
+                this.board.log();
             }
 
             return success;
@@ -535,19 +563,19 @@ var Corners = Corners || {
                 blackWin = true,
                 i,
                 j,
-                checkersInRow = 3,
-                checkersRows = 4;
+                tilesInRow = 3,
+                tilesRows = 4;
 
 
-            if (this._state !== Corners.GameState.INGAME) {
+            if (this.state !== Corners.GameState.INGAME) {
                 throw new Error("isOver() should be called within game in progress only");
             }
 
             // TODO UPDATE
-            for (i = 0; i < checkersRows; i += 1) {
-                for (j = 0; j < checkersInRow; j += 1) {
-                    blackWin = blackWin && this._board.getTile(new Corners.Point(i, j)) === Corners.GameColor.BLACK;
-                    whiteWin = whiteWin && this._board.getTile(new Corners.Point(this._board.width - 1 - i, this._board.height - 1 - j)) === Corners.GameColor.WHITE;
+            for (i = 0; i < tilesRows; i += 1) {
+                for (j = 0; j < tilesInRow; j += 1) {
+                    blackWin = blackWin && this.board.getTile(new Corners.Point(i, j)) === Corners.GameColor.BLACK;
+                    whiteWin = whiteWin && this.board.getTile(new Corners.Point(this.board.width - 1 - i, this.board.height - 1 - j)) === Corners.GameColor.WHITE;
                     if (!blackWin && !whiteWin) {
                         break;
                     }
@@ -560,30 +588,29 @@ var Corners = Corners || {
             // TODO: bug in case of player1 completes the game, and player2 has 1 move to complete
             if (whiteWin) {
                 if (blackWin) {
-                    this._state = Corners.GameState.DRAW;
+                    this.state = Corners.GameState.DRAW;
                 } else {
-                    this._state = Corners.GameState.PLAYER1WIN;
+                    this.state = Corners.GameState.PLAYER1WIN;
                 }
             } else if (blackWin) {
-                this._state = Corners.GameState.PLAYER2WIN;
+                this.state = Corners.GameState.PLAYER2WIN;
             }
 
-            return this._state !== Corners.GameState.INGAME;
+            return this.state !== Corners.GameState.INGAME;
         };
 
         Game.prototype.init = function initGame() {
-                                                              // TODO UPDATE
-            if (!this.ui || !this.player1 || !this.player2 || this.player1.color !== Corners.GameColor.WHITE || this.player2.color !== Corners.GameColor.BLACK) {
+            if (!this.ui || !this.player1 || !this.player2) {
                 throw new Error("Game should get valid Players and UI element before initialization");
             }
 
             var success = true;
 
-            success = success && this._board.init() && this.positionCheckers();
+            success = success && this.board.init() && this.positionTiles();
 
             if (success) {
-                currentPlayer = this._player1;
-                this._state = Corners.GameState.INGAME;
+                currentPlayer = this.player1;
+                this.state = Corners.GameState.INGAME;
             }
 
             return success;
@@ -603,17 +630,17 @@ var Corners = Corners || {
             success = success && this.validateMove(move);
 
             if (success) {
-                this._board.makeMove(move);
-                currentPlayer = currentPlayer === this._player1 ? this._player2 : this._player1;
+                this.board.makeMove(move);
+                currentPlayer = currentPlayer === this.player1 ? this.player2 : this.player1;
             }
 
             return success;
         };
 
         Game.prototype.start = function gameStart(player1, player2, ui) {
-            this._player1 = player1;
-            this._player2 = player2;
-            this._ui = ui;
+            this.player1 = player1;
+            this.player2 = player2;
+            this.ui = ui;
 
             this.init();
 
@@ -623,14 +650,14 @@ var Corners = Corners || {
 
             gameStarted = new CustomEvent("gameStarted", {
                 detail: {
-                    player1 : this._player1,
-                    player2 : this._player2
+                    player1 : this.player1,
+                    player2 : this.player2
                 },
                 bubbles: true,
                 cancelable: false
             });
 
-            this._ui.dispatchEvent(gameStarted);
+            this.ui.dispatchEvent(gameStarted);
 
             while (!this.isOver()) {
                 if (this.nextMove()) {
@@ -644,7 +671,7 @@ var Corners = Corners || {
                         cancelable: false
                     });
 
-                    this._ui.dispatchEvent(gameMove);
+                    this.ui.dispatchEvent(gameMove);
                 }
                 if (this.nextMove()) {
                     gameMove = new CustomEvent("gameMove", {
@@ -657,7 +684,7 @@ var Corners = Corners || {
                         cancelable: false
                     });
 
-                    this._ui.dispatchEvent(gameMove);
+                    this.ui.dispatchEvent(gameMove);
                 }
 
             }
@@ -670,7 +697,7 @@ var Corners = Corners || {
                 cancelable: false
             });
 
-            this._ui.dispatchEvent(gameOver);
+            this.ui.dispatchEvent(gameOver);
 
         };
     }
