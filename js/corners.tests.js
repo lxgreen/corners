@@ -13,9 +13,6 @@ describe("UTILS API", function() {
     it("should expose validateTile() method", function() {
         expect(typeof utils.validateTile).toBe("function");
     });
-    it("should expose validateImage() method", function() {
-        expect(typeof utils.validateImage).toBe("function");
-    });
 });
 
 describe("utils.validatePoint functionality", function() {
@@ -50,9 +47,9 @@ describe("utils.validateCell functionality", function() {
         var cell = new Corners.Cell(new Corners.Point(0, 0));
         expect(utils.validateCell(cell)).toBeTruthy();
     });
-    it("should validate cell { id : \"c77\", tile : { id : 't00', image : https://imageMock.com/img.gif}, point : {7, 7} }", function() {
+    it("should validate cell { id : \"c77\", tile : { id : 't00'}, point : {7, 7} }", function() {
         var cell = new Corners.Cell(new Corners.Point(7, 7));
-        cell.tile = new Corners.Tile("https://imageMock.com/img.gif", "t00");
+        cell.tile = new Corners.Tile("t00");
         expect(utils.validateCell(cell)).toBeTruthy();
     });
 
@@ -62,39 +59,18 @@ describe("utils.validateCell functionality", function() {
 });
 
 describe("utils.validateTile functionality", function() {
-    it("should validate tile { id : \"t00\", image : \"https://imageMock.com/img.gif\" }", function() {
-        var tile = new Corners.Tile("https://imageMock.com/img.gif", "t00");
+    it("should validate tile { id : \"t00\" }", function() {
+        var tile = new Corners.Tile("t00");
         expect(utils.validateTile(tile)).toBeTruthy();
     });
 
     it("should fail tile without id", function() {
-        var tile = new Corners.Tile("https://imageMock.com/img.gif");
+        var tile = new Corners.Tile();
         expect(utils.validateTile(tile)).toBeFalsy();
     });
-    it("should fail tile with null image", function() {
-        var tile = new Corners.Tile(null, "t00");
-        expect(utils.validateTile(tile)).toBeFalsy();
-    });
+
     it("should fail null tile", function() {
         expect(utils.validateTile(null)).toBeFalsy();
-    });
-});
-
-describe("utils.validateImage functionality", function() {
-    it("should validate image \"http://mock.com/img.png\"", function() {
-        expect(utils.validateImage("http://mock.com/img.png")).toBeTruthy();
-    });
-
-    it("should fail non-URL image \"mock\"", function() {
-        expect(utils.validateImage("mock")).toBeFalsy();
-    });
-
-    it("should fail non-string image", function() {
-        expect(utils.validateImage(123)).toBeFalsy();
-    });
-
-    it("should fail null image", function() {
-        expect(utils.validateImage(null)).toBeFalsy();
     });
 });
 
@@ -188,8 +164,8 @@ describe("board.init() + board.state() functionality", function() {
 
 describe("board.getTile() + board.setTile() + board.pickTile() functionality", function() {
     var board = new Corners.Board(),
-        tile00 = new Corners.Tile("https://imageMock.com/img.gif", "t00"),
-        tile11 = new Corners.Tile("https://imageMock.com/img.gif", "t11");
+        tile00 = new Corners.Tile("t00"),
+        tile11 = new Corners.Tile("t11");
 
     board.init();
 

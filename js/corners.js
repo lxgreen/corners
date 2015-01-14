@@ -22,16 +22,10 @@ var utils = utils || {
     validateTile: function validateTile(tile, isNullable) {
         'use strict';
         if (tile !== null) { // it's possible to have null tile
-            return utils.validateImage(tile.image) && utils.validateId(tile.id);
+            return utils.validateId(tile.id);
         } else {
             return !!isNullable;
         }
-    },
-
-    validateImage: function validateImage(image) {
-        'use strict';
-        return !!image && (typeof image === "string") &&
-            /^(?:(?:https?|ftp):\/\/)(?:\S+(?::\S*)?@)?(?:(?!(?:10|127)(?:\.\d{1,3}){3})(?!(?:169\.254|192\.168)(?:\.\d{1,3}){2})(?!172\.(?:1[6-9]|2\d|3[0-1])(?:\.\d{1,3}){2})(?:[1-9]\d?|1\d\d|2[01]\d|22[0-3])(?:\.(?:1?\d{1,2}|2[0-4]\d|25[0-5])){2}(?:\.(?:[1-9]\d?|1\d\d|2[0-4]\d|25[0-4]))|(?:(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)(?:\.(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)*(?:\.(?:[a-z\u00a1-\uffff]{2,})))(?::\d{2,5})?(?:\/\S*)?$/i.test(image);
     },
 
     validateCell: function validateCell(cell) {
@@ -206,7 +200,6 @@ var Corners = Corners || {
             return cell.tile;
         };
 
-        // TODO UPDATE
         // removes and returns tile at point
         Board.prototype.pickTile = function pickTile(x, y) {
 
@@ -255,7 +248,6 @@ var Corners = Corners || {
 
         Board.prototype.makeMove = function boardMakeMove(move) {
             this.movesCount += 1;
-            // TODO UPDATE
             var tile = this.pickTile(move.pointFrom);
             this.setTile(move.pointTo, tile);
             this.log();
@@ -532,7 +524,7 @@ var Corners = Corners || {
         };
 
         // TODO UPDATE
-        Game.prototype.positionTiles = function positionTiles() {
+        Game.prototype.positionTiles = function positionTiles(tiles) {
             var success = true,
                 i,
                 j,
@@ -606,7 +598,7 @@ var Corners = Corners || {
 
             var success = true;
 
-            success = success && this.board.init() && this.positionTiles();
+            success = success && this.board.init() && this.positionTiles(this.player1.tiles) && this.positionTiles(this.player2.tiles);
 
             if (success) {
                 currentPlayer = this.player1;
