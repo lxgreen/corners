@@ -1,3 +1,4 @@
+- test getters/setters added by object.defineProperties
 - test iterator utility
 + add getters for read-only object fields (cell: id, point, tile: id, image, player: name, game: board, etc)
 + Add rules to README

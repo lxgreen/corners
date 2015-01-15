@@ -431,13 +431,16 @@ var Corners = Corners || {
                 "get": function () { return state; }
             },
             "player1": {
-                "get": function () { return player1; }
+                "get": function () { return player1; },
+                "set": function (p) { player1 = p; }
             },
             "player2": {
-                "get": function () { return player2; }
+                "get": function () { return player2; },
+                "set": function (p) { player2 = p; }
             },
             "ui": {
-                "get": function () { return ui; }
+                "get": function () { return ui; },
+                "set": function (e) { ui = e; }
             }
         });
 
