@@ -392,10 +392,11 @@ var Corners = Corners || {
         });
 
         Player.prototype.addTile = function addPlayerTile(tile) {
+
             if (!utils.validateTile(tile)) {
                 throw new Error("Invalid player tile");
             }
-            tiles.push(tile);
+            return !!tiles.push(tile);
         };
 
         Player.prototype.makeMove = function makeMove() {
@@ -537,8 +538,8 @@ var Corners = Corners || {
 
             for (i = 0; i < tilesRows; i += 1) {
                 for (j = 0; j < tilesInRow; j += 1) {
-                    success = success && this.board.setTile(new Corners.Point(i, j), Corners.GameColor.WHITE) &&
-                        this.board.setTile(new Corners.Point(this.board.width - 1 - i, this.board.height - 1 - j), Corners.GameColor.BLACK);
+                    success = success && this.board.setTile(new Corners.Point(i, j), this.player1.tiles[parseInt(i + j + "", Math.max(i, j))]) &&
+                        this.board.setTile(new Corners.Point(this.board.width - 1 - i, this.board.height - 1 - j), this.player2.tiles[parseInt(i + j + "", Math.max(i, j))]);
                 }
             }
 
@@ -549,10 +550,34 @@ var Corners = Corners || {
             return success;
         };
 
+        Game.prototype.setTiles = function setPlayerTiles() {
+            if (this.state !== Corners.GameState.INIT) {
+                throw new Error("setTiles() should be called within game initialization only");
+            }
+
+            var success = true,
+                i,
+                j,
+                tilesInRow = 3,
+                tilesRows = 4,
+                tile1,
+                tile2;
+
+            for (i = 0; i < tilesRows; i += 1) {
+                for (j = 0; j < tilesInRow; j += 1) {
+                    tile1 = new Corners.Tile("t" + (this.board.width - 1 - i) + (this.board.height - 1 - j));
+                    tile2 = new Corners.Tile("t" + i + j);
+                    success = success && this.player1.addTile(tile1) && this.player2.addTile(tile2);
+                }
+            }
+
+            return success;
+        };
+
         // TODO UPDATE
         Game.prototype.isOver = function gameIsOver() {
-            var whiteWin = true,
-                blackWin = true,
+            var player1Win = true,
+                player2Win = true,
                 i,
                 j,
                 tilesInRow = 3,
@@ -566,25 +591,24 @@ var Corners = Corners || {
             // TODO UPDATE
             for (i = 0; i < tilesRows; i += 1) {
                 for (j = 0; j < tilesInRow; j += 1) {
-                    blackWin = blackWin && this.board.getTile(new Corners.Point(i, j)) === Corners.GameColor.BLACK;
-                    whiteWin = whiteWin && this.board.getTile(new Corners.Point(this.board.width - 1 - i, this.board.height - 1 - j)) === Corners.GameColor.WHITE;
-                    if (!blackWin && !whiteWin) {
+                    player2Win = player2Win && this.board.getTile(new Corners.Point(i, j)) === Corners.GameColor.BLACK;
+                    player1Win = player1Win && this.board.getTile(new Corners.Point(this.board.width - 1 - i, this.board.height - 1 - j)) === Corners.GameColor.WHITE;
+                    if (!player2Win && !player1Win) {
                         break;
                     }
                 }
-                if (!blackWin && !whiteWin) {
+                if (!player2Win && !player1Win) {
                     break;
                 }
             }
 
-            // TODO: bug in case of player1 completes the game, and player2 has 1 move to complete
-            if (whiteWin) {
-                if (blackWin) {
+            if (player1Win) {
+                if (player2Win) {
                     this.state = Corners.GameState.DRAW;
                 } else {
                     this.state = Corners.GameState.PLAYER1WIN;
                 }
-            } else if (blackWin) {
+            } else if (player2Win) {
                 this.state = Corners.GameState.PLAYER2WIN;
             }
 
@@ -598,7 +622,9 @@ var Corners = Corners || {
 
             var success = true;
 
-            success = success && this.board.init() && this.positionTiles(this.player1.tiles) && this.positionTiles(this.player2.tiles);
+            success = success && this.board.init() &&
+                this.setTiles() &&
+                this.positionTiles();
 
             if (success) {
                 currentPlayer = this.player1;
