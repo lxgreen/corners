@@ -197,6 +197,70 @@ describe("board.getTile() + board.setTile() + board.pickTile() functionality", f
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+describe("GAME API", function() {
+    var game = new Corners.Game();
+
+    it("should expose board", function() {
+        expect(game.board).toBeDefined();
+    });
+
+    it("should expose players", function() {
+        expect(game.player1).toBeNull();
+        expect(game.player2).toBeNull();
+
+    });
+
+    it("should expose state", function() {
+        expect(game.state).toEqual(Corners.GameState.INIT);
+    });
+
+    it("should expose ui", function() {
+        expect(game.ui).toBeNull();
+    });
+
+    it("should expose init() method", function(){
+        expect(typeof game.init).toBe("function");
+    });
+
+    it("should expose start() method", function(){
+        expect(typeof game.start).toBe("function");
+    });
+
+    it("should expose isAdjacentLegalMove() method", function(){
+        expect(typeof game.isAdjacentLegalMove).toBe("function");
+    });
+
+    it("should expose isHopLegalMove() method", function(){
+        expect(typeof game.isHopLegalMove).toBe("function");
+    });
+
+    it("should expose isLegalMove() method", function(){
+        expect(typeof game.isLegalMove).toBe("function");
+    });
+
+    it("should expose isOver() method", function(){
+        expect(typeof game.isOver).toBe("function");
+    });
+
+    it("should expose nextMove() method", function(){
+        expect(typeof game.nextMove).toBe("function");
+    });
+
+    it("should expose positionTiles() method", function(){
+        expect(typeof game.positionTiles).toBe("function");
+    });
+
+    it("should expose setTiles() method", function(){
+        expect(typeof game.setTiles).toBe("function");
+    });
+
+    it("should expose validateMove() method", function(){
+        expect(typeof game.validateMove).toBe("function");
+    });
+});
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 describe("PLAYER API", function() {
     var agame = new Corners.Game(),
         whitePlayer = new Corners.Player("p1"),
@@ -235,8 +299,6 @@ describe("Player.makeMove functionality", function() {
         game = new Corners.Game(),
         ui = this.document;
 
-    game.init();
     game.start(player1, player2, ui);
-
 
 });
